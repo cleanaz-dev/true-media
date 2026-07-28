@@ -11,7 +11,6 @@ interface Params {
 export default async function Page({ params }: Params) {
   const { bookingId } = await params;
 
-  
   const booking = await getAccessibleBooking(bookingId);
 
   if (!booking) return notFound();

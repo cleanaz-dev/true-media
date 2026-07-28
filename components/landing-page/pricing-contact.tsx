@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import BlueLine from "../ui/BlueLine";
+import Link from "next/link";
 
 export default function PricingContact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -177,12 +178,17 @@ export default function PricingContact() {
                   </ul>
                 </CardContent>
                 <CardFooter>
+                  <Link
+                  href="/rooms"
+                  >
                   <Button
                     className="w-full"
                     variant={plan.highlighted ? "default" : "outline"}
                   >
+                   
                     {plan.action}
                   </Button>
+                   </Link>
                 </CardFooter>
               </Card>
             ))}
