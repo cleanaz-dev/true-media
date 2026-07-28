@@ -1,45 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
 import { SearchBar } from "./search-bar";
-import { Room } from "@/lib/generated/prisma/client"; // Verify this path matches your setup
+import { Room } from "@/lib/generated/prisma/client";
 import { ImageIcon, CheckCircle2, XCircle } from "lucide-react";
+import { useHapio } from "@/context/hapio-contex";
 
 interface RoomsPageProps {
   rooms: Room[];
-  availability: any | null; // Tip: Type this properly based on your Hapio interface later
-  selectedDate?: string;
 }
 
-export function RoomsPage({ rooms, availability, selectedDate }: RoomsPageProps) {
-  // Extract available resource IDs from Hapio response
-  const availableResourceIds = useMemo(() => {
-    if (!availability) return new Set<string>();
-    
-    const ids = new Set<string>();
-    
-    // NOTE: Map this correctly to match the exact Hapio response array structure.
-    // Example: if Hapio returns { resources: [...] } or just an array [...]
-    // availability.forEach((item: any) => ids.add(item.resource_id));
-    
-    return ids;
-  }, [availability]);
+export function RoomsPage({ rooms }: RoomsPageProps) {
+  const { selectedDate, isAvailable, isLoading } = useHapio();
 
   return (
     <div className="w-full pb-24 bg-gray-50 min-h-screen">
-      
+
       {/* --- HERO SECTION --- */}
       <div className="relative w-full h-[30vh] min-h-[300px] flex flex-col items-center justify-center">
-        {/* Background Image (Make sure 'hero-image-02.jpg' is in your /public folder) */}
-        <div 
+        <div
           className="absolute inset-0 z-0 bg-cover bg-center"
           style={{ backgroundImage: "url('/images/hero-image-02.jpg')" }}
         />
-        {/* Deep Blue Overlay */}
         <div className="absolute inset-0 z-0 bg-blue-950/75 mix-blend-multiply" />
-        
-        {/* Hero Copy */}
+
         <div className="relative z-10 text-center px-4 mt-4">
           <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4 drop-shadow-md">
             Find Your Perfect Space
@@ -52,8 +36,7 @@ export function RoomsPage({ rooms, availability, selectedDate }: RoomsPageProps)
 
       {/* --- MAIN CONTENT --- */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Floating Search Bar (pulled up to overlap the hero section) */}
+
         <div className="-mt-10 mb-16">
           <SearchBar />
         </div>
@@ -66,24 +49,25 @@ export function RoomsPage({ rooms, availability, selectedDate }: RoomsPageProps)
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {rooms.map((room) => {
-              const isAvailable = !selectedDate || availableResourceIds.has(room.hapioResourceId);
+              const available = isAvailable(room.hapioResourceId);
+              const showBadge = !!selectedDate && !isLoading;
 
               return (
-                <div 
-                  key={room.id} 
+                <div
+                  key={room.id}
                   className={`bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm flex flex-col transition-all duration-300 ${
-                    selectedDate && !isAvailable 
-                      ? 'opacity-60 grayscale-[50%]' 
+                    selectedDate && !available
+                      ? 'opacity-60 grayscale-[50%]'
                       : 'hover:shadow-xl hover:-translate-y-1'
                   }`}
                 >
                   {/* Card Cover Image */}
                   <div className="h-56 w-full bg-gray-100 relative group overflow-hidden">
                     {room.coverImageUrl ? (
-                      <img 
-                        src={room.coverImageUrl} 
-                        alt={room.name} 
-                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                      <img
+                        src={room.coverImageUrl}
+                        alt={room.name}
+                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
                     ) : (
                       <div className="h-full w-full flex flex-col items-center justify-center text-gray-400 bg-gray-50">
@@ -91,15 +75,15 @@ export function RoomsPage({ rooms, availability, selectedDate }: RoomsPageProps)
                         <span className="text-sm font-medium">No Image</span>
                       </div>
                     )}
-                    
+
                     {/* Floating Availability Badge */}
-                    {selectedDate && (
+                    {showBadge && (
                       <div className={`absolute top-4 right-4 px-3 py-1.5 rounded-full text-xs font-bold flex items-center shadow-lg backdrop-blur-md ${
-                        isAvailable 
-                          ? 'bg-green-500/95 text-white' 
+                        available
+                          ? 'bg-green-500/95 text-white'
                           : 'bg-red-500/95 text-white'
                       }`}>
-                        {isAvailable ? (
+                        {available ? (
                           <><CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Available</>
                         ) : (
                           <><XCircle className="w-3.5 h-3.5 mr-1" /> Unavailable</>
@@ -114,7 +98,7 @@ export function RoomsPage({ rooms, availability, selectedDate }: RoomsPageProps)
                     <p className="text-sm text-gray-500 line-clamp-2 flex-grow leading-relaxed">
                       {room.description || "A beautiful, well-equipped room ready for your next stay. Features modern amenities and comfortable furnishings."}
                     </p>
-                    
+
                     {/* Bottom Action Row */}
                     <div className="mt-6 pt-5 border-t border-gray-100 flex items-center justify-between">
                       <div className="flex flex-col">
@@ -124,14 +108,18 @@ export function RoomsPage({ rooms, availability, selectedDate }: RoomsPageProps)
                           <span className="text-sm font-medium text-gray-500">/hr</span>
                         </span>
                       </div>
-                      
+
                       {/* Interactive Button */}
                       {!selectedDate ? (
                         <span className="text-sm font-medium text-blue-600 bg-blue-50 px-4 py-2 rounded-xl">
                           Select date
                         </span>
-                      ) : isAvailable ? (
-                        <Link 
+                      ) : isLoading ? (
+                        <span className="text-sm font-medium text-gray-400 bg-gray-50 px-4 py-2 rounded-xl">
+                          Checking...
+                        </span>
+                      ) : available ? (
+                        <Link
                           href={`/rooms/${room.id}?date=${selectedDate}`}
                           className="bg-gray-900 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-800 transition-colors shadow-sm"
                         >

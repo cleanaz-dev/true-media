@@ -17,7 +17,7 @@ export async function checkHapioAvailability(date: string) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.HAPIO_API_KEY}`
+                'Authorization': `Bearer ${process.env.HAPIO_KEY}`
             },
             body: JSON.stringify({
                 resources: rooms.map(r => r.hapioResourceId),
