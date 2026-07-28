@@ -1,5 +1,9 @@
 import { createAccessControl } from "better-auth/plugins/access";
-import { defaultStatements, adminAc, userAc } from "better-auth/plugins/admin/access";
+import {
+  defaultStatements,
+  adminAc,
+  userAc,
+} from "better-auth/plugins/admin/access";
 
 const statement = {
   ...defaultStatements,
@@ -12,14 +16,7 @@ export const admin = ac.newRole({
   ...adminAc.statements,
 });
 
-// Dev: can see everything (list/get users, sessions) but can't ban,
-// impersonate, delete, or change roles
-export const dev = ac.newRole({
-  user: ["list", "get"],
-  session: ["list"],
-});
-
 // Regular customer: no admin-plugin permissions
-export const consumer = ac.newRole({
+export const tenant = ac.newRole({
   ...userAc.statements,
 });
