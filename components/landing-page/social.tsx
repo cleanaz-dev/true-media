@@ -4,7 +4,6 @@ import Image from 'next/image';
 import { Quote } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import BlueLine from "../ui/BlueLine";
-import SocialBackgroundImage from "@/public/images/hero-image-02.jpg";
 
 export default function Social() {
   const testimonials = [
@@ -41,7 +40,7 @@ export default function Social() {
         {/* Background Image with Next.js Image */}
         <div className="absolute inset-0 z-0">
           <Image
-            src={SocialBackgroundImage}
+            src="/images/hero-image-02.jpg"
             alt="Background"
             fill
             className="object-cover"

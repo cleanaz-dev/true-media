@@ -5,10 +5,6 @@ import Image, { StaticImageData } from "next/image";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BlueLine from "../ui/BlueLine";
-import MainStudioSpaceImage from "@/public/images/main-space.jpg";
-import BrightMeetingSpaceImage from "@/public/images/bright-meeting-space.jpg";
-import GreenRoomImage from "@/public/images/green-room-space.jpg";
-import ExteriorImage from "@/public/images/exterior-space.jpg";
 
 export default function StudioSpaces() {
   const [selectedImage, setSelectedImage] = useState<number>(0);
@@ -26,7 +22,7 @@ export default function StudioSpaces() {
       name: "All Spaces",
       title: "All Our Spaces",
       description: "Complete overview of our facilities",
-      image: MainStudioSpaceImage,
+      image: "/images/main-space.jpg",
     },
     {
       id: "main",
@@ -34,35 +30,35 @@ export default function StudioSpaces() {
       title: "Main Studio",
       description:
         "Professional recording environment with versatile shooting space",
-      image: MainStudioSpaceImage,
+      image: "/images/main-space.jpg",
     },
     {
       id: "meeting",
       name: "Meeting Room",
       title: "Bright Meeting Space",
       description: "Natural light for creative brainstorming",
-      image: BrightMeetingSpaceImage,
+      image: "/images/bright-meeting-space.jpg",
     },
     {
       id: "green",
       name: "Green Room",
       title: "Green Room",
       description: "Dedicated space for talent preparation",
-      image: GreenRoomImage,
+      image: "/images/green-room-space.jpg",
     },
     {
       id: "office",
       name: "Office Space",
       title: "Relaxation Area",
       description: "Comfortable space between shoots",
-      image: GreenRoomImage,
+      image: "/images/green-room-space.jpg",
     },
     {
       id: "exterior",
       name: "Exterior",
       title: "Building Exterior",
       description: "Modern facility with easy access",
-      image: ExteriorImage,
+      image: "/images/exterior-space.jpg",
     },
   ];
 

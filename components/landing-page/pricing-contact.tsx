@@ -254,7 +254,7 @@ export default function PricingContact() {
                     <Select
                       value={formData.service}
                       onValueChange={(value) =>
-                        handleInputChange("service", value)
+                        handleInputChange("service", value ? value : "")
                       }
                     >
                       <SelectTrigger className="mt-1">
