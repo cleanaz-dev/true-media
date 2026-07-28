@@ -2,7 +2,7 @@ import { prisma } from "../prisma";
 
 export async function getAdminDashboardData() {
   const [totalUsers, totalRooms, bookingsByStatus, recentBookings] =
-    await prisma.$transaction([
+    await Promise.all([ // <--- Changed from prisma.$transaction
       prisma.user.count(),
       prisma.room.count(),
       prisma.booking.groupBy({
@@ -36,6 +36,6 @@ export async function getAdminDashboardData() {
     totalRooms,
     statusCounts,
     recentBookings,
-    revenue,
+    revenue
   };
 }
