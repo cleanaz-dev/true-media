@@ -9,8 +9,12 @@ export async function getBooking(bookingId: string) {
             room: true,
             thread: true,
             user: {
-                
+                omit: {
+                    passwordHash: true
+                }
             }
         }
     })
+    
+    return booking
 }

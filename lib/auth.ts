@@ -6,6 +6,7 @@ import { PrismaNeon } from "@prisma/adapter-neon";
 import { admin as adminPlugin } from "better-auth/plugins";
 import { ac, admin, tenant } from "./permissions";
 import { UserRole } from "@/lib/generated/prisma/client";
+import { headers } from "next/headers";
 
 const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
@@ -69,3 +70,12 @@ export const auth = betterAuth({
     }),
   ],
 });
+
+// Auth Check
+export async function getCurrentUser() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  
+  return session?.user ?? null;
+}

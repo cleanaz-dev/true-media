@@ -55,6 +55,7 @@ model Booking {
   date           DateTime
   pin            String?
   status         BookingStatus @default(PENDING)
+  isPublic       Boolean       @default(false)
 
   thread Thread?
 
