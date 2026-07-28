@@ -64,6 +64,9 @@ model Room {
   id              String  @id @default(cuid())
   name            String
   rate            Int
+  coverImageUrl   String?
+  description     String
+  images          String[] // Array of additional image URLs
   info            Json?
   stripeId        String?
   stripePrice     String?
