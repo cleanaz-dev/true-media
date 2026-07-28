@@ -1,5 +1,5 @@
 import { getBooking } from "@/lib/actions/get-booking";
-import { getCurrentUser } from "../auth";
+import { getCurrentUser } from "./get-user-session";
 
 // Slick access handler: checks public status OR ownership
 export async function getAccessibleBooking(bookingId: string) {
