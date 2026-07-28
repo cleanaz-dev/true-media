@@ -1,31 +1,29 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { Menu } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useState } from "react";
+import Link from "next/link";
+import { Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from '@/components/ui/sheet';
-import NavBarLogo from "@/public/images/logo_white_bg.png"
-import Image from 'next/image';
+} from "@/components/ui/sheet";
+import Image from "next/image";
 
 export default function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
 
-const navLinks = [
-    { name: 'Home', href: '#home' },
-    { name: 'Studios', href: '#studios' },
-    { name: 'Services', href: '#services' },
-    { name: 'About', href: '#about' },
-    { name: 'Pricing', href: '#pricing' },
-    { name: 'Contact', href: '#contact' },
+  const navLinks = [
+    { name: "Home", href: "#home" },
+    { name: "Studios", href: "#studios" },
+    { name: "Services", href: "#services" },
+    { name: "About", href: "#about" },
+    { name: "Pricing", href: "#pricing" },
+    { name: "Contact", href: "#contact" },
   ];
-
 
   return (
     <nav className="bg-white shadow-sm fixed top-0 left-0 right-0 z-50">
@@ -34,10 +32,10 @@ const navLinks = [
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <Image
-            src={NavBarLogo}
-            alt='logo'
-            height={150}
-            width={150}
+              src="/images/logo_white_bg.png"
+              alt="logo"
+              height={150}
+              width={150}
             />
           </Link>
 
@@ -57,7 +55,7 @@ const navLinks = [
           {/* Mobile Menu Button */}
           <div className="md:hidden">
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
-              <SheetTrigger asChild>
+              <SheetTrigger>
                 <Button variant="ghost" size="icon">
                   <Menu className="h-6 w-6" />
                 </Button>

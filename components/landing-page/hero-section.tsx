@@ -4,17 +4,14 @@ import { useState, useEffect } from 'react';
 import Image, {StaticImageData} from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import HeroImage1 from "@/public/images/hero-image-02.jpg"
-import HeroImage2 from "@/public/images/hero-image-03.jpg"
-import HeroImage3 from "@/public/images/hero-image-04.jpg"
 
 export default function HeroSection() {
   const [currentSlide, setCurrentSlide] = useState<number>(0);
 
-  const images: StaticImageData[] = [
-    HeroImage1,
-    HeroImage2,
-    HeroImage3
+  const images = [
+    "/images/hero-image-02.jpg",
+    "/images/hero-image-03.jpg",
+    "/images/hero-image-04.jpg"
   ];
 
   useEffect(() => {
