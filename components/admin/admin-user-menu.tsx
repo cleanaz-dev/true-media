@@ -1,13 +1,8 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import {
-  ChevronsUpDown,
-  LogOut,
-  Settings,
-  User as UserIcon,
-} from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import * as React from "react"
+import { ChevronsUpDown, LogOut, Settings, User as UserIcon } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,26 +11,22 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
+} from "@/components/ui/dropdown-menu"
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar"
 
 // Adjust this import path to point to your Better Auth client configuration!
-import { useSession, signOut } from "@/lib/auth-client";
+import { useSession, signOut } from "@/lib/auth-client"
 
 export function AdminUserMenu() {
-  const { data: session, isPending } = useSession();
+  const { data: session, isPending } = useSession()
 
-  // Skeletons while loading
+  // Skeleton while loading
   if (isPending) {
-    return <div className="h-10 w-full animate-pulse bg-muted rounded-md" />;
+    return <div className="h-10 w-full animate-pulse bg-muted rounded-md" />
   }
 
-  const user = session?.user;
-  if (!user) return null;
+  const user = session?.user
+  if (!user) return null
 
   // Fallback initials (e.g., "John Doe" -> "JD")
   const initials = user.name
@@ -45,34 +36,35 @@ export function AdminUserMenu() {
         .join("")
         .toUpperCase()
         .substring(0, 2)
-    : "AD";
+    : "AD"
 
   return (
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger
-            render={
+            render={(triggerProps) => (
               <SidebarMenuButton
+                {...triggerProps}
                 size="lg"
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground transition-all duration-200 hover:bg-muted"
-              />
-            }
-          >
-            <Avatar className="h-8 w-8 rounded-lg">
-              <AvatarImage src={user.image || ""} alt={user.name || "User"} />
-              <AvatarFallback className="rounded-lg bg-primary text-primary-foreground">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold">{user.name}</span>
-              <span className="truncate text-xs text-muted-foreground">
-                {user.email}
-              </span>
-            </div>
-            <ChevronsUpDown className="ml-auto size-4" />
-          </DropdownMenuTrigger>
+              >
+                <Avatar className="h-8 w-8 rounded-lg">
+                  <AvatarImage src={user.image || ""} alt={user.name || "User"} />
+                  <AvatarFallback className="rounded-lg bg-primary text-primary-foreground">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold">{user.name}</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {user.email}
+                  </span>
+                </div>
+                <ChevronsUpDown className="ml-auto size-4" />
+              </SidebarMenuButton>
+            )}
+          />
 
           <DropdownMenuContent
             className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
@@ -83,10 +75,7 @@ export function AdminUserMenu() {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage
-                    src={user.image || ""}
-                    alt={user.name || "User"}
-                  />
+                  <AvatarImage src={user.image || ""} alt={user.name || "User"} />
                   <AvatarFallback className="rounded-lg bg-primary text-primary-foreground">
                     {initials}
                   </AvatarFallback>
@@ -122,5 +111,5 @@ export function AdminUserMenu() {
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  );
+  )
 }
