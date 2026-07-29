@@ -6,10 +6,10 @@ export async function GET(req: NextRequest) {
   const date = req.nextUrl.searchParams.get("date");
   
   if (!date) {
-    return NextResponse.json({ data: [], availableResourceIds: [] });
+    return NextResponse.json([]); // Return empty array if no date
   }
 
-  const result = await checkHapioAvailability(date);
+  const slots = await checkHapioAvailability(date);
   
-  return NextResponse.json(result);
+  return NextResponse.json(slots);
 }

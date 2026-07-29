@@ -2,13 +2,9 @@
 import { HAPIO_LOCATION_ID, HAPIO_SERVICE_ID } from "../hapio";
 
 export async function checkHapioAvailability(date: string) {
-    // Hapio's PHP backend strictly requires +00:00 instead of Z
-    const from = `${date}T00:00:00+00:00`;
-    const to = `${date}T23:59:59+00:00`;
-
     const query = new URLSearchParams({
-        from,
-        to,
+        from: `${date}T00:00:00+00:00`,
+        to: `${date}T23:59:59+00:00`,
         location: HAPIO_LOCATION_ID,
     });
 
@@ -24,30 +20,15 @@ export async function checkHapioAvailability(date: string) {
             }
         );
 
-        if (!res.ok) {
-            const err = await res.text();
-            throw new Error(`Hapio Error: ${err}`);
-        }
+        if (!res.ok) throw new Error(`Hapio Error: ${await res.text()}`);
         
         const hapioData = await res.json();
-        const slots = hapioData.data || [];
-
-        // Extract the unique hapioResourceIds that are available
-        const availableSet = new Set<string>();
         
-        slots.forEach((slot: any) => {
-            slot.resources?.forEach((resource: any) => {
-                availableSet.add(resource.id);
-            });
-        });
-
-        return {
-            data: slots,
-            availableResourceIds: Array.from(availableSet),
-        };
+        // Just return the raw array of slots
+        return hapioData.data || []; 
         
     } catch (error) {
         console.error("Failed to check general availability:", error);
-        return { data: [], availableResourceIds: [] };
+        return []; // Fail gracefully
     }
 }
