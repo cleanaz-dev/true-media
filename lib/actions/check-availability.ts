@@ -1,52 +1,58 @@
-import { prisma } from "../prisma";
+// lib/actions/check-availability.ts
+import { HAPIO_LOCATION_ID, HAPIO_SERVICE_ID } from "../hapio";
 
 export async function checkHapioAvailability(date: string) {
-    // 1. Get all your room IDs from Prisma
-    const rooms = await prisma.room.findMany({
-        select: { id: true, hapioResourceId: true }
+    // 1. Create the time window for the selected date
+    // Note: If you need to respect a specific timezone, adjust the Z offset
+    const from = `${date}T00:00:00Z`;
+    const to = `${date}T23:59:59Z`;
+
+    const query = new URLSearchParams({
+        from,
+        to,
+        location: HAPIO_LOCATION_ID,
     });
 
-    // 2. Prepare the time range parameters
-    const startTime = `${date}T00:00:00Z`;
-    const endTime = `${date}T23:59:59Z`;
-
     try {
-        // 3. Fetch availability for all resources concurrently 
-        const availabilityPromises = rooms.map(async (room) => {
-            // URLSearchParams ensures your ISO strings are properly URL-encoded
-            const params = new URLSearchParams({
-                from: startTime,
-                to: endTime
-            });
-
-            // Correct base URL and GET endpoint for resource schedules
-            const url = `https://eu-central-1.hapio.net/v1/resources/${room.hapioResourceId}/schedule?${params.toString()}`;
-
-            const response = await fetch(url, {
-                method: 'GET', // GET request, no body allowed
+        // 2. Fetch ALL bookable slots for this service and location in one go
+        const res = await fetch(
+            `https://eu-central-1.hapio.net/v1/services/${HAPIO_SERVICE_ID}/bookable-slots?${query.toString()}`,
+            {
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${process.env.HAPIO_KEY}`
-                }
-            });
-
-            if (!response.ok) {
-                console.error(`Failed to fetch schedule for resource ${room.hapioResourceId}`, await response.text());
-                return { roomId: room.id, schedule: null };
+                    Authorization: `Bearer ${process.env.HAPIO_KEY}`,
+                    "Content-Type": "application/json",
+                },
+                // Ensures Next.js doesn't aggressively cache the availability
+                cache: 'no-store' 
             }
+        );
 
-            const hapioData = await response.json();
-            
-            // Hapio usually returns data wrapped in a "data" array property
-            return { roomId: room.id, schedule: hapioData.data }; 
+        if (!res.ok) {
+            const err = await res.text();
+            throw new Error(`Hapio Error: ${err}`);
+        }
+        
+        const hapioData = await res.json();
+        const slots = hapioData.data || [];
+
+        // 3. Extract the unique hapioResourceIds that are available in any of the slots
+        const availableSet = new Set<string>();
+        
+        slots.forEach((slot: any) => {
+            slot.resources?.forEach((resource: any) => {
+                availableSet.add(resource.id);
+            });
         });
 
-        // 4. Wait for all resource schedules to be fetched
-        const results = await Promise.all(availabilityPromises);
+        // 4. Return exactly what your HapioProvider is waiting for!
+        return {
+            data: slots,
+            availableResourceIds: Array.from(availableSet),
+        };
         
-        return results; 
     } catch (error) {
-        console.error("Hapio fetch failed:", error);
-        return null;
+        console.error("Failed to check general availability:", error);
+        // Safe fallback to prevent frontend crashes
+        return { data: [], availableResourceIds: [] };
     }
 }
