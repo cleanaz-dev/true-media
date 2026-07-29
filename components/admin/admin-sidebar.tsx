@@ -1,6 +1,6 @@
-import * as React from "react"
-import Link from "next/link"
-import Image from "next/image"
+import * as React from "react";
+import Link from "next/link";
+import Image from "next/image";
 import {
   LayoutDashboard,
   CalendarCheck,
@@ -8,7 +8,7 @@ import {
   BedDouble,
   CreditCard,
   Settings,
-} from "lucide-react"
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -20,8 +20,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { AdminUserMenu } from "./admin-user-menu" 
+  SidebarRail,
+} from "@/components/ui/sidebar";
+import { AdminUserMenu } from "./admin-user-menu";
 const navItems = [
   { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { title: "Bookings", href: "/admin/bookings", icon: CalendarCheck },
@@ -29,24 +30,22 @@ const navItems = [
   { title: "Rooms", href: "/admin/rooms", icon: BedDouble },
   { title: "Transactions", href: "/admin/transactions", icon: CreditCard },
   { title: "Settings", href: "/admin/settings", icon: Settings },
-]
+];
 
 export function AdminSidebar() {
   return (
-  
     <Sidebar collapsible="icon" className="border-r">
-      
       <SidebarHeader className="p-4 border-b flex h-16 items-center justify-center">
         {/* Hide the full logo when collapsed using group-data attributes */}
-        <Link 
-          href="/admin" 
+        <Link
+          href="/admin"
           className="flex items-center gap-2 overflow-hidden transition-all group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:hidden"
         >
-          <Image 
-            src="/images/logo-white.png" 
-            alt="Logo" 
-            width={140} 
-            height={40} 
+          <Image
+            src="/images/logo-white.png"
+            alt="Logo"
+            width={140}
+            height={40}
             className="object-contain"
             priority
           />
@@ -65,7 +64,7 @@ export function AdminSidebar() {
             <SidebarMenu className="gap-2 px-2">
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
+                  <SidebarMenuButton
                     render={<Link href={item.href} />}
                     className="
                       group py-5 px-3 rounded-lg transition-all duration-300 ease-in-out
@@ -75,7 +74,9 @@ export function AdminSidebar() {
                   >
                     {/* The icon scales slightly and matches the primary color on hover */}
                     <item.icon className="w-5 h-5 transition-transform duration-300 group-hover:scale-110 group-hover:text-primary" />
-                    <span className="text-sm font-medium tracking-wide">{item.title}</span>
+                    <span className="text-sm font-medium tracking-wide">
+                      {item.title}
+                    </span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -87,7 +88,7 @@ export function AdminSidebar() {
       <SidebarFooter className="p-2 border-t mt-auto">
         <AdminUserMenu />
       </SidebarFooter>
-      
+      <SidebarRail />
     </Sidebar>
-  )
+  );
 }
