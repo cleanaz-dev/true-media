@@ -1,10 +1,21 @@
 "use client";
 
 import { CalendarCheck } from "lucide-react";
-import { AdminPageHeader } from "../admin/admin-page-header";
+import { AdminPageHeader } from "../admin-page-header";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { getAllBookings } from "@/lib/actions/get-all-bookings";
+import { AdminBookingTable } from "./admin-booking-table";
 
-export default function BookingsPage() {
+// One booking item = one element from the array returned by getAllBookings
+export type BookingWithRelations = Awaited<
+  ReturnType<typeof getAllBookings>
+>[number];
+
+interface AdminBookingPageProps {
+  bookings: BookingWithRelations[];
+}
+
+export default function AdminBookingPage({ bookings }: AdminBookingPageProps) {
   return (
     <div className="flex h-full flex-col">
       <div className="px-8 pt-8">
@@ -19,9 +30,7 @@ export default function BookingsPage() {
       </div>
 
       <ScrollArea className="flex-1 px-8 pb-8">
-        <div className="space-y-4">
-          {/* your bookings table / content goes here */}
-        </div>
+        <AdminBookingTable bookings={bookings} />
       </ScrollArea>
     </div>
   );

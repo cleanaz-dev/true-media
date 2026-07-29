@@ -14,7 +14,8 @@ export async function getBooking(bookingId: string) {
                 omit: {
                     passwordHash: true
                 }
-            }
+            },
+            transactions: true
         }
     })
     

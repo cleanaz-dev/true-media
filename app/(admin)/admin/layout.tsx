@@ -5,6 +5,7 @@ import { Plus_Jakarta_Sans, IBM_Plex_Mono } from "next/font/google";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { auth } from "@/lib/auth";
+import { HapioProvider } from "@/context/hapio-contex";
 
 const fontSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -25,7 +26,9 @@ function getMainAppUrl(host: string) {
     return `http://${mainHost}`;
   }
 
-  return process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || `https://${mainHost}`;
+  return (
+    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || `https://${mainHost}`
+  );
 }
 
 export default async function AdminLayout({
@@ -46,13 +49,20 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className={`${fontSans.variable} ${fontMono.variable} font-[family-name:var(--font-admin-sans)]`}>
-      <SidebarProvider>
-        <AdminSidebar />
-        <SidebarInset>
-          <main className="p-4">{children}</main>
-        </SidebarInset>
-      </SidebarProvider>
+    <div
+      className={`${fontSans.variable} ${fontMono.variable} font-[family-name:var(--font-admin-sans)]`}
+    >
+      <HapioProvider>
+        <SidebarProvider>
+          <AdminSidebar />
+          <SidebarInset className="h-svh flex flex-col bg-slate-100">
+            <main className="flex-1 overflow-hidden p-4 md:p-6">
+              {children}
+            </main>
+          </SidebarInset>
+        </SidebarProvider>
+      </HapioProvider>
     </div>
   );
 }
+

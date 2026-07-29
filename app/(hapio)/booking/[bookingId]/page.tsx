@@ -1,4 +1,4 @@
-import { BookingIdPage } from "@/components/booking/page";
+import { BookingIdPage } from "@/components/booking/booking-id-page";
 import { getAccessibleBooking } from "@/lib/actions/booking-access";
 import { notFound } from "next/navigation";
 

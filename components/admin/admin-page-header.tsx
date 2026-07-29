@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { usePageHeader, type UsePageHeaderOptions } from "@/hooks/use-page-header";
+import {
+  usePageHeader,
+  type UsePageHeaderOptions,
+} from "@/hooks/use-page-header";
 
 export function AdminPageHeader(options: UsePageHeaderOptions) {
   const { title, description, icon: Icon, action } = usePageHeader(options);
@@ -24,11 +27,13 @@ export function AdminPageHeader(options: UsePageHeaderOptions) {
       {action && (
         <div className="shrink-0">
           {action.href ? (
-            <Button>
+            <Button size="lg">
               <Link href={action.href}>{action.label}</Link>
             </Button>
           ) : (
-            <Button onClick={action.onClick}>{action.label}</Button>
+            <Button size="lg" onClick={action.onClick}>
+              {action.label}
+            </Button>
           )}
         </div>
       )}

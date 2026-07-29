@@ -20,6 +20,26 @@ enum BookingStatus {
   COMPLETED
 }
 
+enum PaymentProvider {
+  STRIPE
+  CASH
+  ETRANSFER
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+// Optional, but very helpful for querying without having to sum up transactions
+enum PaymentState {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+}
+
 model User {
   id            String   @id @default(cuid())
   name          String
@@ -42,6 +62,7 @@ model User {
 
   accounts Account[]
   sessions Session[]
+  transactions  Transaction[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -61,6 +82,9 @@ model Booking {
   isPublic       Boolean       @default(false)
 
   thread Thread?
+  paymentState   PaymentState  @default(UNPAID)
+  transactions  Transaction[]
+
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -95,7 +119,6 @@ model TenantDetails {
   user             User     @relation(fields: [userId], references: [id])
   userId           String   @unique
   stripeCustomerId String?
-  transactions     String[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -158,4 +181,35 @@ model Session {
   @@unique([token])
   @@index([userId])
   @@map("session")
+}
+
+
+model Transaction {
+  id             String          @id @default(cuid())
+  amount         Int             // Store in cents (e.g., $50.00 = 5000) - Stripe prefers this!
+  currency       String          @default("cad") // or "usd"
+  
+  provider       PaymentProvider
+  status         PaymentStatus   @default(PENDING)
+  
+  // External tracking
+  externalId     String?         // Stripe PaymentIntent ID (pi_xxx) OR E-transfer Reference Number
+  receiptUrl     String?         // Stripe receipt URL (if applicable)
+  
+  // Useful for manual payments (Cash/E-transfer admin notes)
+  notes          String?         
+
+  // Relations
+  booking        Booking?        @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  bookingId      String?
+  
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([userId])
+  @@index([bookingId])
+  @@index([externalId]) // Fast lookups for Stripe webhooks
 }
