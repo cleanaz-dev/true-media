@@ -4,26 +4,37 @@ import { useState } from "react"
 import { Room } from "@/lib/generated/prisma/client"
 import { Clock } from "lucide-react"
 
+// Added rawStartsAt and rawEndsAt
 interface TimeSlot {
     id: string;
-    startTime: string; // e.g., "09:00"
-    endTime: string;   // e.g., "10:00"
+    startTime: string; 
+    endTime: string;   
+    rawStartsAt: string; 
+    rawEndsAt: string;   
 }
 
 interface RoomDetailsPageProps {
     roomDetails: Room;
     selectedDate?: string;
-    availableSlots?: TimeSlot[]; // Pass the slots from the server
+    availableSlots?: TimeSlot[]; 
 }
 
 export function RoomDetailsPage({ roomDetails, selectedDate, availableSlots = [] }: RoomDetailsPageProps) {
-    // Keep track of the exact time they want to book
-    const [selectedTimeId, setSelectedTimeId] = useState<string | null>(null);
+    // Store the whole slot so we have access to the raw ISO strings for checkout
+    const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
 
     const handleCheckout = () => {
-        if (!selectedTimeId) return;
-        // Proceed to Stripe checkout here, passing the roomId, date, and selectedTimeId
-        console.log("Proceeding to checkout with slot:", selectedTimeId);
+        if (!selectedSlot) return;
+        
+        // You now have exactly what you need to create a Hapio booking!
+        console.log("Proceeding to checkout with:", {
+            roomId: roomDetails.id,
+            hapioResourceId: roomDetails.hapioResourceId,
+            startsAt: selectedSlot.rawStartsAt,
+            endsAt: selectedSlot.rawEndsAt
+        });
+
+        // e.g., router.push(`/checkout?roomId=${roomDetails.id}&startsAt=${selectedSlot.rawStartsAt}&endsAt=${selectedSlot.rawEndsAt}`)
     };
 
     return (
@@ -72,7 +83,12 @@ export function RoomDetailsPage({ roomDetails, selectedDate, availableSlots = []
                             {selectedDate ? (
                                 <div className="mb-6 rounded-lg bg-blue-50 border border-blue-100 p-4 text-sm">
                                     <span className="font-semibold text-blue-900 block mb-1">Selected Date</span>
-                                    <span className="text-blue-700">{new Date(selectedDate).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                                    {/* Make sure we force UTC so the date doesn't jump backward a day based on local timezone */}
+                                    <span className="text-blue-700">
+                                        {new Date(selectedDate + "T12:00:00Z").toLocaleDateString(undefined, { 
+                                            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+                                        })}
+                                    </span>
                                 </div>
                             ) : (
                                 <div className="mb-6 p-4 rounded-lg bg-yellow-50 text-yellow-800 text-sm">
@@ -92,10 +108,10 @@ export function RoomDetailsPage({ roomDetails, selectedDate, availableSlots = []
                                         {availableSlots.map((slot) => (
                                             <button
                                                 key={slot.id}
-                                                onClick={() => setSelectedTimeId(slot.id)}
+                                                onClick={() => setSelectedSlot(slot)}
                                                 className={`py-2 px-3 rounded-lg text-sm font-medium border transition-all ${
-                                                    selectedTimeId === slot.id 
-                                                    ? 'bg-blue-600 border-blue-600 text-white' 
+                                                    selectedSlot?.id === slot.id 
+                                                    ? 'bg-blue-600 border-blue-600 text-white shadow-md' 
                                                     : 'bg-white border-zinc-200 text-zinc-700 hover:border-blue-600 hover:text-blue-600'
                                                 }`}
                                             >
@@ -112,10 +128,10 @@ export function RoomDetailsPage({ roomDetails, selectedDate, availableSlots = []
 
                             <button 
                                 onClick={handleCheckout}
-                                disabled={!selectedTimeId}
+                                disabled={!selectedSlot}
                                 className="w-full rounded-xl bg-black px-4 py-4 font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-30 disabled:cursor-not-allowed"
                             >
-                                {selectedTimeId ? "Continue to Checkout" : "Select a time to book"}
+                                {selectedSlot ? "Continue to Checkout" : "Select a time to book"}
                             </button>
                         </div>
                     </div>
