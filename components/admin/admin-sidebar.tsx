@@ -51,10 +51,14 @@ export function AdminSidebar() {
           />
         </Link>
         {/* Optional: Show a tiny icon ONLY when collapsed */}
-        <BedDouble className="hidden h-6 w-6 group-data-[collapsible=icon]:block text-primary" />
+        <div className="bg-primary p-2">
+          <p className="font-bold text-white">TS</p>
+        </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent
+        className="bg-primary"
+      >
         <SidebarGroup>
           <SidebarGroupLabel className="mt-4 mb-2 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             Management
