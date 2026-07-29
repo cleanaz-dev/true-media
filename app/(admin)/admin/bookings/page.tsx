@@ -1,5 +1,9 @@
 export default async function Page() {
-  <main>
-    <header>Admin Rooms Page</header>
-  </main>;
+    return (
+        <main>
+            <header>
+               Bookings Rooms Page
+            </header>
+        </main>
+    )
 }

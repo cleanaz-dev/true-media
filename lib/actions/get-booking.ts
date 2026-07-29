@@ -1,3 +1,5 @@
+// lib/actions/get-booking
+
 import { prisma } from "../prisma";
 
 export async function getBooking(bookingId: string) {

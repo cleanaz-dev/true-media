@@ -39,7 +39,13 @@ export const auth = betterAuth({
   advanced: {
     crossSubDomainCookies: {
       enabled: true,
+      // Explicit domain is required for local subdomains to share cookies
+      domain: process.env.NODE_ENV === "production" 
+        ? ".true-media.vercel.app" 
+        : ".lvh.me",
     },
+    // Use secure cookies in prod only; allow http in dev
+    useSecureCookies: process.env.NODE_ENV === "production",
   },
 
   emailAndPassword: {

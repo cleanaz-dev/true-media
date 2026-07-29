@@ -23,6 +23,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { AdminUserMenu } from "./admin-user-menu";
+
 const navItems = [
   { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { title: "Bookings", href: "/admin/bookings", icon: CalendarCheck },
@@ -35,11 +36,11 @@ const navItems = [
 export function AdminSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r">
-      <SidebarHeader className="p-4 border-b flex h-16 items-center justify-center">
-        {/* Hide the full logo when collapsed using group-data attributes */}
+      <SidebarHeader className="flex h-16 items-center justify-center border-b p-4">
+        {/* Full logo: visible when expanded, hidden when collapsed */}
         <Link
           href="/admin"
-          className="flex items-center gap-2 overflow-hidden transition-all group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:hidden"
+          className="flex items-center gap-2 overflow-hidden transition-all group-data-[collapsible=icon]:hidden"
         >
           <Image
             src="/images/logo-white.png"
@@ -50,37 +51,32 @@ export function AdminSidebar() {
             priority
           />
         </Link>
-        {/* Optional: Show a tiny icon ONLY when collapsed */}
-        <div className="bg-primary p-2">
-          <p className="font-bold text-white">TS</p>
+
+        {/* Collapsed icon: hidden when expanded, visible when collapsed */}
+        <div className="hidden items-center justify-center rounded-md bg-white/10 p-2 group-data-[collapsible=icon]:flex">
+          <span className="text-lg font-bold text-primary rounded-sm">TS</span>
         </div>
       </SidebarHeader>
 
-      <SidebarContent
-        className="bg-primary"
-      >
+      <SidebarContent className="bg-primary">
         <SidebarGroup>
-          <SidebarGroupLabel className="mt-4 mb-2 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          <SidebarGroupLabel className="mb-2 mt-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">
             Management
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            {/* Added gap-2 for better vertical spacing between items */}
             <SidebarMenu className="gap-2 px-2">
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     render={<Link href={item.href} />}
-                    className="
-                      group py-5 px-3 rounded-lg transition-all duration-300 ease-in-out
-                      hover:bg-muted/50 hover:translate-x-2 hover:text-primary 
-                      hover:shadow-[inset_2px_0_0_0_hsl(var(--primary))]
-                    "
+                    className="rounded-lg px-3 py-5 hover:bg-muted/50 transition-all duration-150 ease-in-out "
                   >
-                    {/* The icon scales slightly and matches the primary color on hover */}
-                    <item.icon className="w-5 h-5 transition-transform duration-300 group-hover:scale-110 group-hover:text-primary" />
+                    <div className="text-white transition-all duration-300  hover:translate-x-2 flex items-center gap-2">
+                    <item.icon className="h-5 w-5 transition-all duration-300 text-white "/>
                     <span className="text-sm font-medium tracking-wide">
                       {item.title}
                     </span>
+                    </div>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -89,7 +85,7 @@ export function AdminSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-2 border-t mt-auto">
+      <SidebarFooter className="mt-auto bg-primary p-2">
         <AdminUserMenu />
       </SidebarFooter>
       <SidebarRail />

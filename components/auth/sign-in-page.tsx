@@ -37,7 +37,12 @@ export default function SignInPage() {
   return (
     <main className="flex min-h-screen w-full bg-white">
       {/* Brand Section (Left Side - Hidden on Mobile) */}
-      <section className="hidden w-1/2 flex-col justify-between bg-zinc-950 p-12 text-white lg:flex relative overflow-hidden">
+      <section
+        className="hidden w-1/2 flex-col justify-between p-12 text-white lg:flex relative overflow-hidden bg-cover bg-center"
+        style={{
+          backgroundImage: "url('/images/log-in-image-compressed.png')",
+        }}
+      >
         <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 to-zinc-950 opacity-80" />
 
         <div className="relative z-10 flex items-center gap-2">

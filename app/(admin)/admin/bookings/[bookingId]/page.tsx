@@ -1,6 +1,6 @@
 import { getAccessibleBooking } from "@/lib/actions/booking-access";
 import { notFound } from "next/navigation";
-import { BookingIdPage } from "../page";
+import { BookingIdPage } from "@/components/booking/booking-id-page";
 
 interface Params {
   params: Promise<{
