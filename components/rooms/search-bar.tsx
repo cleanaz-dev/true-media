@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Search } from "lucide-react";
+import { Calendar as CalendarIcon, Search, Loader2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -13,14 +13,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useHapio } from "@/context/hapio-contex"; // Make sure this path matches your project!
 
 export function SearchBar() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { isLoading } = useHapio(); // <-- Consume loading state
 
-  // Initialize with the URL date if it exists
   const initialDateParam = searchParams.get("date");
-  // Add timezone offset to prevent day shifting issues if necessary
   const initialDate = initialDateParam
     ? new Date(initialDateParam + "T00:00:00")
     : undefined;
@@ -31,7 +31,6 @@ export function SearchBar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (date) {
-      // Format as YYYY-MM-DD for the server and Hapio
       const formattedDate = format(date, "yyyy-MM-dd");
       router.push(`/rooms?date=${formattedDate}`);
     }
@@ -47,7 +46,7 @@ export function SearchBar() {
           Check-in Date
         </label>
         <Popover open={isOpen} onOpenChange={setIsOpen}>
-          <PopoverTrigger>
+          <PopoverTrigger >
             <Button
               variant="ghost"
               className={cn(
@@ -65,9 +64,8 @@ export function SearchBar() {
               selected={date}
               onSelect={(newDate) => {
                 setDate(newDate);
-                if (newDate) setIsOpen(false); // Auto-close after selection
+                if (newDate) setIsOpen(false); 
               }}
-              // Disable past dates to prevent booking in the past
               disabled={(date) => {
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
@@ -81,11 +79,15 @@ export function SearchBar() {
       <div className="w-full sm:w-auto p-2">
         <Button
           type="submit"
-          disabled={!date}
+          disabled={!date || isLoading} // <-- Disable while loading
           className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-8 h-14 text-base font-semibold transition-all shadow-md disabled:bg-blue-300 disabled:cursor-not-allowed"
         >
-          <Search className="mr-2 h-5 w-5" />
-          Check Availability
+          {isLoading ? (
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+          ) : (
+            <Search className="mr-2 h-5 w-5" />
+          )}
+          {isLoading ? "Checking..." : "Check Availability"}
         </Button>
       </div>
     </form>
