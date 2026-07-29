@@ -70,7 +70,7 @@ export function AdminUserMenu() {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className={`flex w-full items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-left transition-colors hover:bg-neutral-50 ${
+        className={`cursor-pointer flex w-full items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-left transition-colors hover:bg-neutral-50 ${
           open ? "bg-neutral-100 ring-1 ring-neutral-300" : ""
         }`}
       >
@@ -164,7 +164,7 @@ function MenuItem({ icon: Icon, label, onClick, destructive }: MenuItemProps) {
       type="button"
       role="menuitem"
       onClick={onClick}
-      className={`flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors ${
+      className={`cursor-pointer flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors ${
         destructive
           ? "text-red-600 hover:bg-red-50"
           : "text-neutral-700 hover:bg-neutral-50"
