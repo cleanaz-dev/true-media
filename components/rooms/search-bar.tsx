@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react"; // <-- Import useTransition
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, Search, Loader2 } from "lucide-react";
 
@@ -13,12 +13,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useHapio } from "@/context/hapio-contex"; // Make sure this path matches your project!
+import { useHapio } from "@/context/hapio-contex"; 
 
 export function SearchBar() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isLoading } = useHapio(); // <-- Consume loading state
+  const { isLoading } = useHapio(); 
+  
+  // <-- Add useTransition hook
+  const [isPending, startTransition] = useTransition(); 
 
   const initialDateParam = searchParams.get("date");
   const initialDate = initialDateParam
@@ -32,9 +35,17 @@ export function SearchBar() {
     e.preventDefault();
     if (date) {
       const formattedDate = format(date, "yyyy-MM-dd");
-      router.push(`/rooms?date=${formattedDate}`);
+      
+      // <-- Wrap router.push in startTransition to get INSTANT visual feedback
+      startTransition(() => {
+        router.push(`/rooms?date=${formattedDate}`);
+      });
     }
   };
+
+  // Combine both loading states: 
+  // isPending catches the instant button click, isLoading catches the API fetch
+  const showLoading = isPending || isLoading;
 
   return (
     <form
@@ -79,15 +90,15 @@ export function SearchBar() {
       <div className="w-full sm:w-auto p-2">
         <Button
           type="submit"
-          disabled={!date || isLoading} // <-- Disable while loading
+          disabled={!date || showLoading} // <-- use showLoading here
           className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-8 h-14 text-base font-semibold transition-all shadow-md disabled:bg-blue-300 disabled:cursor-not-allowed"
         >
-          {isLoading ? (
+          {showLoading ? (
             <Loader2 className="mr-2 h-5 w-5 animate-spin" />
           ) : (
             <Search className="mr-2 h-5 w-5" />
           )}
-          {isLoading ? "Checking..." : "Check Availability"}
+          {showLoading ? "Checking..." : "Check Availability"}
         </Button>
       </div>
     </form>
