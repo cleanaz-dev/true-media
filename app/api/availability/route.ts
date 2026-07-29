@@ -7,5 +7,7 @@ export async function GET(req: NextRequest) {
   if (!date) return NextResponse.json(null);
 
   const result = await checkHapioAvailability(date);
+
+  console.log("Availability:", result)
   return NextResponse.json(result);
 }
