@@ -68,6 +68,31 @@ model User {
   updatedAt DateTime @updatedAt
 }
 
+model AdminSettings {
+  // Use a hardcoded string like "global" so there is only ever one row
+  id String @id @default("global")
+
+  // Business Info
+  businessName String  @default("My Booking SaaS")
+  supportEmail String?
+  supportPhone String?
+
+  // Payment Preferences
+  enableStripe    Boolean @default(true)
+  enableCash      Boolean @default(true)
+  enableEtransfer Boolean @default(true)
+  
+  // E-Transfer details shown to users at checkout
+  eTransferEmail        String? 
+  eTransferInstructions String? 
+
+  // System Controls
+  maintenanceMode Boolean @default(false)
+
+  updatedAt DateTime @updatedAt
+}
+
+
 model Booking {
   id             String        @id @default(cuid())
   hapioBookingId String        @unique

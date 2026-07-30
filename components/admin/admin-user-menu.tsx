@@ -110,12 +110,7 @@ export function AdminUserMenu() {
             label="Profile"
             onClick={() => setOpen(false)}
           />
-          <MenuItem
-            icon={Settings}
-            label="Settings"
-            onClick={() => setOpen(false)}
-          />
-
+         
           <div className="my-1 h-px bg-neutral-200" />
 
           <MenuItem

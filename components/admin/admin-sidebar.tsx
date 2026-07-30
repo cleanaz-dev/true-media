@@ -51,7 +51,7 @@ export function AdminSidebar() {
           className="flex items-center gap-2 overflow-hidden transition-all group-data-[collapsible=icon]:hidden"
         >
           <Image
-            src="/images/logo-white.png"
+            src="/images/menu-logo.png"
             alt="Logo"
             width={140}
             height={40}

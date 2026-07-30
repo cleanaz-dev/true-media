@@ -61,7 +61,7 @@ function RoomAmenities({ info }: { info: RoomInfo }) {
       <span className="mb-3 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         Included Amenities
       </span>
-      <div className="flex flex-wrap gap-x-5 gap-y-3">
+      <div className="flex flex-wrap gap-x-5 gap-y-3 bg-muted p-4 rounded-md">
         {amenities.map(({ key, label, Icon, isActive }) => (
           <div
             key={key}
