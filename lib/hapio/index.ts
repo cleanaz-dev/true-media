@@ -63,6 +63,7 @@ export async function createHapioBooking(params: {
   resourceId: string;
   startsAt: string;
   endsAt: string;
+  isTemporary: boolean
 }) {
   return hapioFetch<{ id: string; [key: string]: unknown }>(`/bookings`, {
     method: "POST",
@@ -72,6 +73,7 @@ export async function createHapioBooking(params: {
       resource_id: params.resourceId,
       starts_at: params.startsAt,
       ends_at: params.endsAt,
+      is_temporary: params.isTemporary
     }),
   });
 }

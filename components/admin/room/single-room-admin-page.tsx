@@ -57,9 +57,9 @@ export function SingleRoomAdminPage({ room }: SingleRoomAdminPageProps) {
     name: room.name,
     description: room.description || "",
     rate: room.rate,
-    capacity: existingInfo.capacity || 1,
+    capacity: room.capacity || 1,
     coverImageUrl: room.coverImageUrl || "",
-    stripePrice: room.stripePrice || "",
+    stripePrice: room.stripePriceId || "",
     images: room.images || [],
     amenities: Object.keys(AMENITY_CONFIG).reduce((acc, key) => {
       acc[key] = !!existingInfo[key];
@@ -193,7 +193,7 @@ export function SingleRoomAdminPage({ room }: SingleRoomAdminPageProps) {
                         key={key}
                         type="button"
                         onClick={() => toggleAmenity(key)}
-                        className={`flex flex-col items-center justify-center gap-2 rounded-lg border p-4 transition-all hover:bg-muted ${
+                        className={`cursor-pointer flex flex-col items-center justify-center gap-2 rounded-lg border p-4 transition-all hover:bg-muted ${
                           isActive ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground"
                         }`}
                       >

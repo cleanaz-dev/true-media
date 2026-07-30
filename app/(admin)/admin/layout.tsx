@@ -6,6 +6,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { auth } from "@/lib/auth";
 import { HapioProvider } from "@/context/hapio-contex";
+import { Toaster } from "@/components/ui/toast";
 
 const fontSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -59,6 +60,7 @@ export default async function AdminLayout({
             <main className="flex-1 overflow-hidden p-4 md:p-6">
               {children}
             </main>
+             <Toaster />
           </SidebarInset>
         </SidebarProvider>
       </HapioProvider>

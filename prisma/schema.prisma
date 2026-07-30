@@ -41,33 +41,32 @@ enum PaymentState {
 }
 
 model User {
-  id            String   @id @default(cuid())
+  id            String  @id @default(cuid())
   name          String
-  email         String   @unique
-  emailVerified Boolean  @default(false) // Better Auth core requires this
-  
-  phone         String?
-  passwordHash  String?
-  avatarUrl     String?
-  
-  role          UserRole @default(TENANT)
+  email         String  @unique
+  emailVerified Boolean @default(false) // Better Auth core requires this
+
+  phone        String?
+  passwordHash String?
+  avatarUrl    String?
+
+  role UserRole @default(TENANT)
 
   // Better Auth Admin Plugin fields
-  banned        Boolean   @default(false)
-  banReason     String?
-  banExpires    DateTime?
+  banned     Boolean   @default(false)
+  banReason  String?
+  banExpires DateTime?
 
   bookings      Booking[]
   tenantDetails TenantDetails?
 
-  accounts Account[]
-  sessions Session[]
-  transactions  Transaction[]
+  accounts     Account[]
+  sessions     Session[]
+  transactions Transaction[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-
 
 model Booking {
   id             String        @id @default(cuid())
@@ -80,11 +79,12 @@ model Booking {
   pin            String?
   status         BookingStatus @default(PENDING)
   isPublic       Boolean       @default(false)
+  tempHold       DateTime?
+  stripeCheckoutSessionId String?
 
-  thread Thread?
-  paymentState   PaymentState  @default(UNPAID)
-  transactions  Transaction[]
-
+  thread       Thread?
+  paymentState PaymentState  @default(UNPAID)
+  transactions Transaction[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -100,24 +100,25 @@ model Thread {
 }
 
 model Room {
-  id              String  @id @default(cuid())
+  id              String   @id @default(cuid())
   name            String
   rate            Int
+  capacity        Int?
   coverImageUrl   String?
   description     String
   images          String[] // Array of additional image URLs
   info            Json?
-  stripeId        String?
-  stripePrice     String?
-  hapioResourceId String  @unique
+  stripeProductId String?
+  stripePriceId   String?
+  hapioResourceId String   @unique
 
   bookings Booking[]
 }
 
 model TenantDetails {
-  id               String   @id @default(cuid())
-  user             User     @relation(fields: [userId], references: [id])
-  userId           String   @unique
+  id               String  @id @default(cuid())
+  user             User    @relation(fields: [userId], references: [id])
+  userId           String  @unique
   stripeCustomerId String?
 
   createdAt DateTime @default(now())
@@ -126,7 +127,7 @@ model TenantDetails {
 
 model WebhookEvent {
   id          String    @id @default(cuid())
-  provider    String    // "hapio" | "stripe"
+  provider    String // "hapio" | "stripe"
   eventId     String    @unique
   type        String
   payload     Json
@@ -183,31 +184,30 @@ model Session {
   @@map("session")
 }
 
-
 model Transaction {
-  id             String          @id @default(cuid())
-  amount         Int             // Store in cents (e.g., $50.00 = 5000) - Stripe prefers this!
-  currency       String          @default("cad") // or "usd"
-  
-  provider       PaymentProvider
-  status         PaymentStatus   @default(PENDING)
-  
+  id       String @id @default(cuid())
+  amount   Int // Store in cents (e.g., $50.00 = 5000) - Stripe prefers this!
+  currency String @default("cad") // or "usd"
+
+  provider PaymentProvider
+  status   PaymentStatus   @default(PENDING)
+
   // External tracking
-  externalId     String?         // Stripe PaymentIntent ID (pi_xxx) OR E-transfer Reference Number
-  receiptUrl     String?         // Stripe receipt URL (if applicable)
-  
+  externalId String? // Stripe PaymentIntent ID (pi_xxx) OR E-transfer Reference Number
+  receiptUrl String? // Stripe receipt URL (if applicable)
+
   // Useful for manual payments (Cash/E-transfer admin notes)
-  notes          String?         
+  notes String?
 
   // Relations
-  booking        Booking?        @relation(fields: [bookingId], references: [id], onDelete: SetNull)
-  bookingId      String?
-  
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId         String
+  booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  bookingId String?
 
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([bookingId])

@@ -13,7 +13,7 @@ export async function updateRoom(roomId: string, data: any) {
         rate: parseInt(data.rate),
         coverImageUrl: data.coverImageUrl || null,
         images: data.images, // Array of strings
-        stripePrice: data.stripePrice || null,
+        stripePriceId: data.stripePrice || null,
         info: data.info, // JSON object with amenities & capacity
       },
     });

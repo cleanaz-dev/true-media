@@ -140,7 +140,7 @@ export function RoomsPage({ rooms }: RoomsPageProps) {
                               Price
                             </span>
                             <span className="text-2xl font-black text-gray-900">
-                              ${room.stripePrice}
+                              ${room.stripePriceId}
                               <span className="text-sm font-medium text-gray-500">
                                 /hr
                               </span>
