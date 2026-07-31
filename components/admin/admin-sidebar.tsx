@@ -11,6 +11,7 @@ import {
   CreditCard,
   Settings,
   DoorOpen,
+  MailIcon,
 } from "lucide-react";
 import {
   Sidebar,
@@ -33,6 +34,7 @@ const navItems = [
   { title: "Bookings", href: "/admin/bookings", icon: CalendarCheck },
   { title: "Tenants", href: "/admin/tenants", icon: Users },
   { title: "Rooms", href: "/admin/rooms", icon: DoorOpen },
+  { title: "Emails", href: "/admin/emails", icon: MailIcon },
   { title: "Transactions", href: "/admin/transactions", icon: CreditCard },
   { title: "Settings", href: "/admin/settings", icon: Settings },
 ];
@@ -88,13 +90,13 @@ export function AdminSidebar() {
                         "group/nav relative overflow-hidden rounded-lg px-3 py-5 transition-all duration-200",
                         "text-slate-400 hover:bg-white/[0.05] hover:text-white",
                         isActive &&
-                          "bg-white/10 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]"
+                          "bg-white/10 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]",
                       )}
                     >
                       <item.icon
                         className={cn(
                           "h-[18px] w-[18px] transition-transform duration-200",
-                          !isActive && "group-hover/nav:scale-110"
+                          !isActive && "group-hover/nav:scale-110",
                         )}
                       />
                       <span className="text-sm font-medium tracking-wide">
@@ -121,4 +123,3 @@ export function AdminSidebar() {
     </Sidebar>
   );
 }
-
