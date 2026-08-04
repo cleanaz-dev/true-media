@@ -249,16 +249,16 @@ enum EmailStatus {
 
 model EmailTemplate {
   id          String  @id @default(cuid())
-  slug        String  @unique // e.g. "register", "booking-confirmation"
+  slug        String  @unique // "register", "stripe-success"
   name        String
-  subject     String // Can contain variables like "Welcome {{name}}"
+  subject     String  // e.g., "Welcome {{name}}"
+  content     String  @db.Text // ADD THIS: Stores markdown like "Hi {{name}}, your booking is confirmed!"
   description String?
   isActive    Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-
 model EmailLog {
   id           String  @id @default(cuid())
   templateSlug String? // Matches EmailTemplate.slug for reference

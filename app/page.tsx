@@ -1,23 +1,25 @@
-import Footer from "@/components/landing-page/footer";
-import HeroSection from "@/components/landing-page/hero-section";
-import NavBar from "@/components/landing-page/nav-bar";
-import OurServices from "@/components/landing-page/our-services";
-import PricingContact from "@/components/landing-page/pricing-contact";
-import Social from "@/components/landing-page/social";
-import StudioSpaces from "@/components/landing-page/studio-spaces";
+import { SiteHeader } from "@/components/site/site-header"
+import { Hero } from "@/components/site/hero"
+import { StudioSpaces } from "@/components/site/studio-spaces"
+import { Services } from "@/components/site/services"
+import { Testimonials } from "@/components/site/testimonials"
+import { Pricing } from "@/components/site/pricing"
+import { Contact } from "@/components/site/contact"
+import { SiteFooter } from "@/components/site/site-footer"
 
 export default function Home() {
   return (
-    <div className="">
-     <main>
-      <NavBar />
-      <HeroSection />
-      <StudioSpaces />
-      <OurServices />
-      <Social />
-      <PricingContact />
-      <Footer />
-     </main>
+    <div className="min-h-svh bg-background">
+      <SiteHeader />
+      <main>
+        <Hero />
+        <StudioSpaces />
+        <Services />
+        <Testimonials />
+        <Pricing />
+        <Contact />
+      </main>
+      <SiteFooter />
     </div>
-  );
+  )
 }

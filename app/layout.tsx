@@ -1,39 +1,60 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { Toaster } from 'sonner';
+// import { Analytics } from '@vercel/analytics/next'
+import type { Metadata, Viewport } from 'next'
+import { Inter, Fraunces } from 'next/font/google'
+import './globals.css'
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+})
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  variable: '--font-fraunces',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
-  title: "TRUE MEDIA - Toronto\u2019s Premier Content Creation Hub",
+  title: 'True Media Studios | Book Creative Studio Spaces',
   description:
-    "TRUE MEDIA is Toronto and Markham\u2019s leading creative studio for digital content creators, offering professional studios, podcast spaces, and production resources for YouTubers, influencers, and brands to bring their vision to life.",
-};
+    'Premium studio and office spaces for content creation, podcasting, photography and video production. Book by the hour, day, or custom package at True Media Studios.',
+  generator: 'v0.app',
+  icons: {
+    icon: [
+      {
+        url: '/icon-light-32x32.png',
+        media: '(prefers-color-scheme: light)',
+      },
+      {
+        url: '/icon-dark-32x32.png',
+        media: '(prefers-color-scheme: dark)',
+      },
+      {
+        url: '/icon.svg',
+        type: 'image/svg+xml',
+      },
+    ],
+    apple: '/apple-icon.png',
+  },
+}
 
-
+export const viewport: Viewport = {
+  colorScheme: 'light',
+  themeColor: '#ffffff',
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+    <html lang="en" className={`${inter.variable} ${fraunces.variable} bg-background`}>
+      <body className={`font-[family-name:var(--font-inter)] antialiased`}>
         {children}
-         <Toaster />
+        {/* {process.env.NODE_ENV === 'production' && <Analytics />} */}
       </body>
     </html>
-  );
+  )
 }
