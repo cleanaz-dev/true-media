@@ -1,4 +1,3 @@
-// lib/actions/create-booking.ts
 "use server";
 
 import { prisma } from "@/lib/prisma";
@@ -12,20 +11,17 @@ const qstash = new QStashClient({ token: process.env.QSTASH_TOKEN! });
 
 interface CreateBookingInput {
   roomId: string;
-  startsAt: string; // ISO string
-  endsAt: string;   // ISO string
+  startsAt: string; 
+  endsAt: string;   
+  totalHours: number; // Added this to fix the quantity bug
 }
 
 export async function createBooking(input: CreateBookingInput) {
   const session = await getCurrentUser()
-  if(!session) {
-    redirect("/sign-in")
-  }
+  if(!session) redirect("/sign-in")
 
   const room = await prisma.room.findUniqueOrThrow({ where: { id: input.roomId } });
-  if (!room.stripePriceId) {
-    throw new Error("Room has no Stripe price configured");
-  }
+  if (!room.stripePriceId) throw new Error("Room has no Stripe price configured");
 
   // 1. Create temporary Hapio hold
   const hapioBooking = await createHapioBooking({
@@ -54,25 +50,27 @@ export async function createBooking(input: CreateBookingInput) {
       // 3. Create Stripe Checkout Session
       const checkoutSession = await stripe.checkout.sessions.create({
         mode: "payment",
-        line_items: [{ price: room.stripePriceId, quantity: 1 }],
+        // FIX: Use the actual total hours selected as the quantity
+        line_items: [{ price: room.stripePriceId, quantity: input.totalHours }],
         success_url: `${process.env.NEXT_PUBLIC_APP_URL}/bookings/${booking.id}?success=true`,
         cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/bookings/${booking.id}?canceled=true`,
         metadata: { bookingId: booking.id, userId: session.id },
       });
 
-      // 4. Store the session id, needed by the expiry job
+      // 4. Store the session id
       await prisma.booking.update({
         where: { id: booking.id },
         data: { stripeCheckoutSessionId: checkoutSession.id },
       });
 
-      // 5. Schedule the expiry job
+      // 5. Schedule the QStash expiry job
       await qstash.publishJSON({
         url: `${process.env.NEXT_PUBLIC_APP_URL}/api/bookings/expire`,
-        body: { bookingId: booking.id },
+        body: { bookingId: booking.id, hapioBookingId: hapioBooking.id, stripeSessionId: checkoutSession.id },
         delay: "15m",
       });
 
+      // 6. Return the URL so the frontend can redirect
       return { url: checkoutSession.url };
     } catch (err) {
       await prisma.booking.delete({ where: { id: booking.id } });

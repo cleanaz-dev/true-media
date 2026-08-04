@@ -134,7 +134,7 @@ export function Pricing() {
               </ul>
 
               <a
-                href="#contact"
+                href="/rooms"
                 className={cn(
                   "mt-8 inline-flex h-12 items-center justify-center rounded-full px-6 text-sm font-semibold transition-colors",
                   plan.featured

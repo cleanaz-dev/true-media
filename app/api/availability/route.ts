@@ -10,6 +10,6 @@ export async function GET(req: NextRequest) {
   }
 
   const slots = await checkHapioAvailability(date);
-  
+  console.log(`Availability for ${date}:`, slots); // Log the slots for debugging
   return NextResponse.json(slots);
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition } from "react"; // <-- Import useTransition
+import { useState, useTransition } from "react";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, Search, Loader2 } from "lucide-react";
 
@@ -13,15 +13,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useHapio } from "@/context/hapio-contex"; 
+import { useHapio } from "@/context/hapio-contex";
 
 export function SearchBar() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isLoading } = useHapio(); 
-  
-  // <-- Add useTransition hook
-  const [isPending, startTransition] = useTransition(); 
+  const { isLoading } = useHapio();
+
+  const [isPending, startTransition] = useTransition();
 
   const initialDateParam = searchParams.get("date");
   const initialDate = initialDateParam
@@ -35,16 +34,12 @@ export function SearchBar() {
     e.preventDefault();
     if (date) {
       const formattedDate = format(date, "yyyy-MM-dd");
-      
-      // <-- Wrap router.push in startTransition to get INSTANT visual feedback
       startTransition(() => {
         router.push(`/rooms?date=${formattedDate}`);
       });
     }
   };
 
-  // Combine both loading states: 
-  // isPending catches the instant button click, isLoading catches the API fetch
   const showLoading = isPending || isLoading;
 
   return (
@@ -57,25 +52,28 @@ export function SearchBar() {
           Check-in Date
         </label>
         <Popover open={isOpen} onOpenChange={setIsOpen}>
-          <PopoverTrigger >
-            <Button
-              variant="ghost"
-              className={cn(
-                "w-full justify-start text-left font-medium text-lg px-0 hover:bg-transparent hover:text-blue-600 transition-colors focus-visible:ring-0",
-                !date && "text-gray-400 font-normal",
-              )}
-            >
-              <CalendarIcon className="mr-3 h-5 w-5 text-blue-600" />
-              {date ? format(date, "PPP") : "Add a date"}
-            </Button>
-          </PopoverTrigger>
+          <PopoverTrigger
+            render={(triggerProps) => (
+              <Button
+                {...triggerProps}
+                variant="ghost"
+                className={cn(
+                  "w-full justify-start text-left font-medium text-lg px-0 hover:bg-transparent hover:text-blue-600 transition-colors focus-visible:ring-0",
+                  !date && "text-gray-400 font-normal",
+                )}
+              >
+                <CalendarIcon className="mr-3 h-5 w-5 text-blue-600" />
+                {date ? format(date, "PPP") : "Add a date"}
+              </Button>
+            )}
+          />
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
               selected={date}
               onSelect={(newDate) => {
                 setDate(newDate);
-                if (newDate) setIsOpen(false); 
+                if (newDate) setIsOpen(false);
               }}
               disabled={(date) => {
                 const today = new Date();
@@ -90,7 +88,7 @@ export function SearchBar() {
       <div className="w-full sm:w-auto p-2">
         <Button
           type="submit"
-          disabled={!date || showLoading} // <-- use showLoading here
+          disabled={!date || showLoading}
           className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-8 h-14 text-base font-semibold transition-all shadow-md disabled:bg-blue-300 disabled:cursor-not-allowed"
         >
           {showLoading ? (

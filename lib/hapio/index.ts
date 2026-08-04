@@ -84,3 +84,13 @@ export async function cancelHapioBooking(hapioBookingId: string) {
     method: "DELETE",
   });
 }
+
+// --- Confirm temporary booking (Remove temporary hold) ---
+export async function confirmHapioBooking(hapioBookingId: string) {
+  return hapioFetch(`/bookings/${hapioBookingId}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      is_temporary: false,
+    }),
+  });
+}
