@@ -1,14 +1,18 @@
+// app/api/webhooks/stripe/route.ts
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import { confirmHapioBooking, cancelHapioBooking } from "@/lib/hapio";
+import { sendEmail } from "@/lib/email/send-email";
+import { BookingConfirmationEmail } from "@/lib/email/booking-confirmation-email";
 import Stripe from "stripe";
 
 export async function POST(req: Request) {
   const body = await req.text();
   const signature = (await headers()).get("Stripe-Signature") as string;
   let event: Stripe.Event;
+  
   try {
     event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET!);
   } catch (error: any) {
@@ -21,7 +25,12 @@ export async function POST(req: Request) {
     const userId = session.metadata?.userId;
 
     if (bookingId && userId) {
-      const booking = await prisma.booking.findUnique({ where: { id: bookingId } });
+      // INCLUDE user and room so we have the data for the email
+      const booking = await prisma.booking.findUnique({ 
+        where: { id: bookingId },
+        include: { user: true, room: true } 
+      });
+
       if (booking && booking.status === "PENDING") {
         
         // 1. CONFIRM HAPIO FIRST. If it throws, return 500 so Stripe retries later.
@@ -50,6 +59,23 @@ export async function POST(req: Request) {
             userId: userId,
           }
         });
+
+        // 4. SEND CONFIRMATION EMAIL
+        // Wrap in a try/catch so if Resend is down, we don't return 500 and 
+        // cause Stripe to retry the webhook (which would try to confirm Hapio again)
+        try {
+          await sendEmail({
+            to: booking.user.email,
+            // Make sure this matches the domain you verified in Resend!
+            from: "bookings@yourdomain.com", 
+            subject: `Booking Confirmed: ${booking.room.name}`,
+            template: BookingConfirmationEmail({ user: booking.user, booking, room: booking.room }),
+            userId: booking.userId,
+            templateSlug: "booking-confirmation",
+          });
+        } catch (e) {
+          console.error("Failed to send confirmation email", e);
+        }
       }
     }
   }
@@ -57,6 +83,7 @@ export async function POST(req: Request) {
   if (event.type === "checkout.session.expired") {
     const session = event.data.object as Stripe.Checkout.Session;
     const bookingId = session.metadata?.bookingId;
+    
     if (bookingId) {
       const booking = await prisma.booking.findUnique({ where: { id: bookingId } });
       if (booking && booking.status === "PENDING") {
@@ -72,4 +99,3 @@ export async function POST(req: Request) {
 
   return new NextResponse(null, { status: 200 });
 }
-
