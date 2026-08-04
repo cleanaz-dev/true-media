@@ -36,9 +36,6 @@ export function RoomDetailsPage({ roomDetails }: RoomDetailsPageProps) {
           new Date(a.rawStartsAt).getTime() - new Date(b.rawStartsAt).getTime(),
       );
 
-      // Ensure slots are continuous (Optional but recommended check)
-      // You might want logic here to block checking out if they select 1pm and 4pm but skip 2pm.
-
       const response = await createBooking({
         roomId: roomDetails.id,
         startsAt: sortedSlots[0].rawStartsAt,
@@ -46,9 +43,9 @@ export function RoomDetailsPage({ roomDetails }: RoomDetailsPageProps) {
         totalHours: sortedSlots.length,
       });
 
-      // Redirect to Stripe Checkout
-      if (response.url) {
-        router.push(response.url);
+      // CHANGED: Route to Hybrid Checkout Page instead of Stripe directly
+      if (response.bookingId) {
+        router.push(`/checkout/${response.bookingId}`);
       }
     } catch (error) {
       console.error("Failed to start checkout:", error);

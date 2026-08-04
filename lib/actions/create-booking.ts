@@ -13,7 +13,7 @@ interface CreateBookingInput {
   roomId: string;
   startsAt: string; 
   endsAt: string;   
-  totalHours: number; // Added this to fix the quantity bug
+  totalHours: number;
 }
 
 export async function createBooking(input: CreateBookingInput) {
@@ -23,7 +23,6 @@ export async function createBooking(input: CreateBookingInput) {
   const room = await prisma.room.findUniqueOrThrow({ where: { id: input.roomId } });
   if (!room.stripePriceId) throw new Error("Room has no Stripe price configured");
 
-  // 1. Create temporary Hapio hold
   const hapioBooking = await createHapioBooking({
     resourceId: room.hapioResourceId,
     startsAt: input.startsAt,
@@ -32,7 +31,6 @@ export async function createBooking(input: CreateBookingInput) {
   });
 
   try {
-    // 2. Create local Booking row
     const tempHold = new Date(Date.now() + 15 * 60 * 1000);
 
     const booking = await prisma.booking.create({
@@ -47,31 +45,27 @@ export async function createBooking(input: CreateBookingInput) {
     });
 
     try {
-      // 3. Create Stripe Checkout Session
       const checkoutSession = await stripe.checkout.sessions.create({
         mode: "payment",
-        // FIX: Use the actual total hours selected as the quantity
         line_items: [{ price: room.stripePriceId, quantity: input.totalHours }],
         success_url: `${process.env.NEXT_PUBLIC_APP_URL}/bookings/${booking.id}?success=true`,
         cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/bookings/${booking.id}?canceled=true`,
         metadata: { bookingId: booking.id, userId: session.id },
       });
 
-      // 4. Store the session id
       await prisma.booking.update({
         where: { id: booking.id },
         data: { stripeCheckoutSessionId: checkoutSession.id },
       });
 
-      // 5. Schedule the QStash expiry job
       await qstash.publishJSON({
         url: `${process.env.NEXT_PUBLIC_APP_URL}/api/bookings/expire`,
         body: { bookingId: booking.id, hapioBookingId: hapioBooking.id, stripeSessionId: checkoutSession.id },
         delay: "15m",
       });
 
-      // 6. Return the URL so the frontend can redirect
-      return { url: checkoutSession.url };
+      // CHANGED: Return bookingId for hybrid routing
+      return { bookingId: booking.id };
     } catch (err) {
       await prisma.booking.delete({ where: { id: booking.id } });
       throw err;
@@ -81,3 +75,4 @@ export async function createBooking(input: CreateBookingInput) {
     throw err;
   }
 }
+

@@ -1,5 +1,6 @@
-import { CheckoutView } from "@/components/checkout/checkout-view";
+// app/(hapio)/checkout/[bookingId]/page.tsx
 
+import { CheckoutView } from "@/components/checkout/checkout-view";
 
 interface PageProps {
   params: {
