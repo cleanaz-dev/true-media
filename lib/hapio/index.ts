@@ -73,11 +73,12 @@ export async function createHapioBooking(params: {
       resource_id: params.resourceId,
       starts_at: params.startsAt,
       ends_at: params.endsAt,
-      is_temporary: params.isTemporary
+      is_temporary: params.isTemporary,
+      // ADD THIS LINE: Tells Hapio to accept merged multi-hour blocks
+      ignore_bookable_slots: true 
     }),
   });
 }
-
 // --- Cancel booking ---
 export async function cancelHapioBooking(hapioBookingId: string) {
   return hapioFetch(`/bookings/${hapioBookingId}`, {
