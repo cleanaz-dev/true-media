@@ -62,7 +62,7 @@ export function RoomDetailsPage({ roomDetails }: RoomDetailsPageProps) {
             {roomDetails.name}
           </h1>
           <p className="mt-2 text-lg font-medium text-zinc-600">
-            ${(roomDetails.rate / 100).toFixed(2)}{" "}
+            ${(roomDetails.rate).toFixed(2)}{" "}
             <span className="text-sm font-normal">/ hour</span>
           </p>
         </div>

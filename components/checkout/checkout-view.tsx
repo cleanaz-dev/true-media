@@ -59,7 +59,7 @@ export function CheckoutView({ booking, room, stripeUrl }: CheckoutViewProps) {
 
                 <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {/* Date Badge */}
-                  <div className="flex items-center gap-4 rounded-xl border border-zinc-100 bg-zinc-50/50 p-4">
+                  <div className="flex items-center gap-4 rounded-xl border border-zinc-100 bg-slate-200 p-4">
                     <div className="rounded-full bg-white p-2 shadow-sm ring-1 ring-zinc-200">
                       <CalendarDays className="h-4 w-4 text-zinc-600" />
                     </div>
@@ -72,7 +72,7 @@ export function CheckoutView({ booking, room, stripeUrl }: CheckoutViewProps) {
                   </div>
 
                   {/* Time Badge */}
-                  <div className="flex items-center gap-4 rounded-xl border border-zinc-100 bg-zinc-50/50 p-4">
+                  <div className="flex items-center gap-4 rounded-xl border border-zinc-100 bg-slate-200 p-4">
                     <div className="rounded-full bg-white p-2 shadow-sm ring-1 ring-zinc-200">
                       <Clock className="h-4 w-4 text-zinc-600" />
                     </div>
@@ -86,7 +86,7 @@ export function CheckoutView({ booking, room, stripeUrl }: CheckoutViewProps) {
                   
                   {/* Capacity Badge */}
                   {room.capacity && (
-                    <div className="flex items-center gap-4 rounded-xl border border-zinc-100 bg-zinc-50/50 p-4 sm:col-span-2">
+                    <div className="flex items-center gap-4 rounded-xl border border-zinc-100 bg-slate-200 p-4 sm:col-span-2">
                       <div className="rounded-full bg-white p-2 shadow-sm ring-1 ring-zinc-200">
                         <Users className="h-4 w-4 text-zinc-600" />
                       </div>

@@ -64,8 +64,6 @@ export async function POST(req: Request) {
         });
 
         // 4. SEND CONFIRMATION EMAIL
-        // Wrap in a try/catch so if Resend is down, we don't return 500 and
-        // cause Stripe to retry the webhook (which would try to confirm Hapio again)
         try {
           await sendEmail({
             to: booking.user.email,
@@ -102,9 +100,10 @@ export async function POST(req: Request) {
         } catch (e) {
           console.error(e);
         }
-        await prisma.booking.updateMany({
-          where: { id: bookingId, status: "PENDING" },
-          data: { status: "CANCELLED" },
+        
+        // CHANGED: Delete the booking entirely instead of keeping it as CANCELLED
+        await prisma.booking.delete({
+          where: { id: bookingId }
         });
       }
     }

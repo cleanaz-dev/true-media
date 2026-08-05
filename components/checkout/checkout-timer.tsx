@@ -57,18 +57,23 @@ export function CheckoutTimer({
   };
 
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-xl">
+    // Removed the nested border, shadow, and p-6 so it expands fully in the parent card
+    <div className="w-full">
       {/* Timer Banner */}
       <div
-        className={`mb-8 flex items-center justify-between rounded-xl p-4 ${
-          isExpired ? "bg-red-50 text-red-800" : "bg-blue-50 text-blue-900"
+        className={`mb-8 flex flex-col items-center justify-center gap-2 rounded-xl p-6 shadow-sm transition-colors ${
+          isExpired 
+            ? "bg-red-600 text-white" 
+            : "bg-blue-600 text-white"
         }`}
       >
-        <div className="flex items-center font-semibold">
-          <Clock className="mr-2 h-5 w-5" />
-          {isExpired ? "Hold Expired" : "Time left to complete booking"}
+        <div className="flex items-center text-sm font-medium uppercase tracking-wider opacity-90">
+          <Clock className="mr-2 h-4 w-4" />
+          {isExpired ? "Hold Expired" : "Time left to complete"}
         </div>
-        <div className="tabular-nums text-2xl font-bold">{timeString}</div>
+        <div className="tabular-nums text-4xl font-bold tracking-tight">
+          {timeString}
+        </div>
       </div>
 
       {/* Booking Summary */}
@@ -88,7 +93,7 @@ export function CheckoutTimer({
       </div>
 
       {/* Action Buttons */}
-      <div className="mt-8 space-y-4">
+      <div className="mt-8 space-y-3">
         <a
           href={isExpired ? "#" : stripeUrl}
           className={`block w-full rounded-xl px-4 py-4 text-center font-bold text-white transition-colors ${
@@ -103,7 +108,7 @@ export function CheckoutTimer({
         <button
           onClick={handleCancel}
           disabled={isCancelling}
-          className="w-full rounded-xl px-4 py-3 font-semibold text-zinc-500 transition-colors hover:text-zinc-900"
+          className="w-full rounded-xl px-4 py-3 font-semibold text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-red-600 hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-30"
         >
           {isCancelling ? "Cancelling..." : "Cancel & Change Times"}
         </button>
