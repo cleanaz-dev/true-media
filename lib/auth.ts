@@ -7,7 +7,6 @@ import { admin as adminPlugin } from "better-auth/plugins";
 import { ac, admin, tenant } from "./permissions";
 import { UserRole } from "@/lib/generated/prisma/client";
 
-
 const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
 
@@ -16,7 +15,6 @@ export const auth = betterAuth({
     provider: "postgresql",
   }),
 
-  // 1. Allow incoming requests from your root domains and subdomains
   baseURL: {
     allowedHosts: [
       "localhost:3000",
@@ -31,27 +29,37 @@ export const auth = betterAuth({
     "http://localhost:3000",
     "http://lvh.me:3000",
     "http://admin.lvh.me:3000",
-    "https://admin.true-media.vercel.app", // Add your admin subdomain
+    "https://admin.true-media.vercel.app",
     "https://*.true-media.vercel.app",
   ],
 
-  // 2. Enable sharing session cookies between main domain and subdomains
   advanced: {
     crossSubDomainCookies: {
       enabled: true,
-      // Explicit domain is required for local subdomains to share cookies
-      domain: process.env.NODE_ENV === "production" 
-        ? ".true-media.vercel.app" 
-        : ".lvh.me",
+      domain:
+        process.env.NODE_ENV === "production"
+          ? ".true-media.vercel.app"
+          : ".lvh.me",
     },
-    // Use secure cookies in prod only; allow http in dev
     useSecureCookies: process.env.NODE_ENV === "production",
   },
 
   emailAndPassword: {
     enabled: true,
   },
+
+  // ADD THIS BLOCK
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    },
+  },
+
   user: {
+    fields: {
+      image: "avatarUrl", // map Better Auth's "image" to your "avatarUrl" column
+    },
     additionalFields: {
       role: {
         type: "string",
@@ -76,4 +84,3 @@ export const auth = betterAuth({
     }),
   ],
 });
-
