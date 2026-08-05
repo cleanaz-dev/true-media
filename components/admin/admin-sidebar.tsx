@@ -12,6 +12,7 @@ import {
   Settings,
   DoorOpen,
   MailIcon,
+  ScrollText,
 } from "lucide-react";
 import {
   Sidebar,
@@ -36,6 +37,7 @@ const navItems = [
   { title: "Rooms", href: "/admin/rooms", icon: DoorOpen },
   { title: "Emails", href: "/admin/emails", icon: MailIcon },
   { title: "Transactions", href: "/admin/transactions", icon: CreditCard },
+  {title: "Contracts", href: "/admin/contracts", icon: ScrollText},
   { title: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
