@@ -54,6 +54,19 @@ enum SignerStatus {
   DECLINED
 }
 
+enum TaskType {
+  GENERATE_CONTRACT_PDF
+  RESEARCH_CONTENT
+  OTHER
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
 model User {
   id            String  @id @default(cuid())
   name          String
@@ -74,15 +87,16 @@ model User {
   bookings      Booking[]
   tenantDetails TenantDetails?
 
-  accounts     Account[]
-  sessions     Session[]
-  transactions Transaction[]
-  createdContracts  Contract[]       @relation("ContractCreator")
-  signatures        ContractSigner[]
+  accounts         Account[]
+  sessions         Session[]
+  transactions     Transaction[]
+  createdContracts Contract[]       @relation("ContractCreator")
+  signatures       ContractSigner[]
 
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  emailLogs EmailLog[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  emailLogs   EmailLog[]
+  systemTasks SystemTask[]
 }
 
 model AdminSettings {
@@ -122,7 +136,7 @@ model Booking {
   isPublic                Boolean       @default(false)
   tempHold                DateTime?
   stripeCheckoutSessionId String?
-  totalHours              Int           @default(1) 
+  totalHours              Int           @default(1)
 
   thread       Thread?
   paymentState PaymentState  @default(UNPAID)
@@ -268,7 +282,7 @@ model EmailTemplate {
   id          String  @id @default(cuid())
   slug        String  @unique // "register", "stripe-success"
   name        String
-  subject     String  // e.g., "Welcome {{name}}"
+  subject     String // e.g., "Welcome {{name}}"
   content     String  @db.Text // ADD THIS: Stores markdown like "Hi {{name}}, your booking is confirmed!"
   description String?
   isActive    Boolean @default(true)
@@ -276,6 +290,7 @@ model EmailTemplate {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
 model EmailLog {
   id           String  @id @default(cuid())
   templateSlug String? // Matches EmailTemplate.slug for reference
@@ -300,79 +315,89 @@ model EmailLog {
   @@index([templateSlug])
 }
 
-
 model ContractTemplate {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
   description String?
-  
+
   // This could be HTML/Markdown, or just an S3 key to a static PDF 
   // that you append dynamic fields to.
-  body        String?  @db.Text 
-  s3Key       String?  
-  
-  isActive    Boolean  @default(true)
-  contracts   Contract[]
+  body  String? @db.Text
+  s3Key String?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isActive  Boolean    @default(true)
+  contracts Contract[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Contract {
-  id              String         @id @default(cuid())
-  title           String
-  status          ContractStatus @default(DRAFT)
+  id     String         @id @default(cuid())
+  title  String
+  status ContractStatus @default(DRAFT)
 
   // Document Storage
-  originalS3Key   String?  // The original unsigned document (e.g., generated PDF)
-  completedS3Key  String?  // The final document with all signatures appended
+  originalS3Key  String? // The original unsigned document (e.g., generated PDF)
+  completedS3Key String? // The final document with all signatures appended
 
   // Relations
-  template        ContractTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
-  templateId      String?
-
+  template   ContractTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  templateId String?
 
   // The admin who created/sent it
-  createdBy       User?    @relation("ContractCreator", fields: [createdById], references: [id])
-  createdById     String?
+  createdBy   User?   @relation("ContractCreator", fields: [createdById], references: [id])
+  createdById String?
 
   // The people required to sign this contract
-  signers         ContractSigner[]
+  signers ContractSigner[]
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([createdById])
 }
 
 model ContractSigner {
-  id           String       @id @default(cuid())
-  
-  contract     Contract     @relation(fields: [contractId], references: [id], onDelete: Cascade)
-  contractId   String
+  id String @id @default(cuid())
+
+  contract   Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  contractId String
 
   // Link to a user if they have an account, but keeping email as a string 
   // allows you to send contracts to people who aren't in your DB yet.
-  user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
-  userId       String?
-  email        String
-  name         String       // Name of the person signing
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId String?
+  email  String
+  name   String // Name of the person signing
 
-  status       SignerStatus @default(PENDING)
-  
+  status SignerStatus @default(PENDING)
+
   // Audit Trail (Crucial for legal binding)
   signedAt     DateTime?
-  signatureTxt String?      // E.g., The typed name "John Doe" or a base64 signature image
-  ipAddress    String?      // Capture IP for audit purposes
-  userAgent    String?      // Capture browser info for audit purposes
+  signatureTxt String? // E.g., The typed name "John Doe" or a base64 signature image
+  ipAddress    String? // Capture IP for audit purposes
+  userAgent    String? // Capture browser info for audit purposes
 
   // Security: A unique token used in the URL sent via email (e.g., myapp.com/sign/[token])
-  signToken    String?      @unique
+  signToken String? @unique
 
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([contractId])
   @@index([userId])
+}
+
+model SystemTask {
+  id          String     @id @default(cuid())
+  type        TaskType
+  metadata    Json // Store any data needed for the task
+  status      TaskStatus @default(PENDING)
+  error       String?
+  createdBy   User?      @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdById String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
