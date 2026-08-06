@@ -7,7 +7,7 @@ export default async function Page() {
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect("/register");
+    redirect("/sign-in");
   }
 
   const rooms = await getRooms();

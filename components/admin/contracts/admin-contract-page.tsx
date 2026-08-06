@@ -22,6 +22,10 @@ export function AdminContractsPage({ contracts }: AdminContractsPageProps) {
           title="Contracts"
           description="View and manage all contracts here."
           icon={ScrollText}
+          action={{
+            label: "New Contract",
+            href: "/admin/contracts/new"
+          }}
         />
       </div>
 

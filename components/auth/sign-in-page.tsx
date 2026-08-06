@@ -52,18 +52,18 @@ export default function SignInPage() {
       <section
         className="hidden w-1/2 flex-col justify-between p-12 text-white lg:flex relative overflow-hidden bg-cover bg-center"
         style={{
-          backgroundImage: "url('/images/log-in-image-compressed.png')",
+          backgroundImage: "url('/images/new-logo-white-text.png')",
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 to-zinc-950 opacity-80" />
 
         <div className="relative z-10 flex items-center gap-2">
-          <div className="h-8 w-8 rounded bg-white text-black flex items-center justify-center font-bold text-xl">
+          {/* <div className="h-8 w-8 rounded bg-white text-black flex items-center justify-center font-bold text-xl">
             T
           </div>
           <span className="text-xl font-semibold tracking-tight">
             True Media
-          </span>
+          </span> */}
         </div>
 
         <div className="relative z-10">

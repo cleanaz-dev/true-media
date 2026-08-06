@@ -9,6 +9,7 @@ import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -99,40 +100,45 @@ export const columns: ColumnDef<TenantsWithRelations>[] = [
 
       return (
         <DropdownMenu>
-          {/* UPDATED: Using the new render prop for the trigger */}
+          {/* Using the new render prop for the trigger */}
           <DropdownMenuTrigger render={<Button variant="ghost" className="h-8 w-8 p-0" />}>
             <span className="sr-only">Open menu</span>
             <MoreHorizontal className="h-4 w-4" />
           </DropdownMenuTrigger>
-          
+
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            
-            {/* UPDATED: Using render={<button />} for click actions */}
-            <DropdownMenuItem 
-              render={<button onClick={() => navigator.clipboard.writeText(tenant.id)} />}
-            >
-              Copy Tenant ID
-            </DropdownMenuItem>
-            
+            {/* Base UI requires DropdownMenuLabel to live inside a DropdownMenuGroup */}
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+
+              <DropdownMenuItem
+                render={<button onClick={() => navigator.clipboard.writeText(tenant.id)} />}
+              >
+                Copy Tenant ID
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+
             <DropdownMenuSeparator />
-            
-            {/* UPDATED: Using render={<Link />} for navigation */}
-            <DropdownMenuItem render={<Link href={`/admin/tenants/${tenant.id}`} />}>
-              View Details
-            </DropdownMenuItem>
-            <DropdownMenuItem render={<Link href={`/admin/tenants/${tenant.id}/bookings`} />}>
-              View Bookings
-            </DropdownMenuItem>
-            
+
+            <DropdownMenuGroup>
+              <DropdownMenuItem render={<Link href={`/admin/tenants/${tenant.id}`} />}>
+                View Details
+              </DropdownMenuItem>
+              <DropdownMenuItem render={<Link href={`/admin/tenants/${tenant.id}/bookings`} />}>
+                View Bookings
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+
             <DropdownMenuSeparator />
-            
-            <DropdownMenuItem 
-              render={<button />}
-              className={tenant.banned ? "text-emerald-600" : "text-destructive"}
-            >
-              {tenant.banned ? "Unban Tenant" : "Ban Tenant"}
-            </DropdownMenuItem>
+
+            <DropdownMenuGroup>
+              <DropdownMenuItem
+                render={<button />}
+                className={tenant.banned ? "text-emerald-600" : "text-destructive"}
+              >
+                {tenant.banned ? "Unban Tenant" : "Ban Tenant"}
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
       );

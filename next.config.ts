@@ -16,7 +16,8 @@ const nextConfig: NextConfig = {
     ],
   },
   allowedDevOrigins: [
-    'lvh.me'
+    'lvh.me',
+    'admin.lvh.me',
   ]
 };
 

@@ -53,21 +53,27 @@ export default function RegisterPage() {
   return (
     <main className="flex min-h-screen w-full bg-white">
       {/* Brand Section (Left Side - Hidden on Mobile) */}
-      <section className="hidden w-1/2 flex-col justify-between bg-zinc-950 p-12 text-white lg:flex relative overflow-hidden">
+      <section
+        className="hidden w-1/2 flex-col justify-between p-12 text-white lg:flex relative overflow-hidden bg-cover bg-center"
+        style={{
+          backgroundImage: "url('/images/new-logo-white-text.png')",
+        }}
+      >
         <div className="absolute inset-0 bg-gradient-to-tr from-zinc-900 to-zinc-950 opacity-80" />
 
         <div className="relative z-10 flex items-center gap-2">
           {/* Replace with your actual logo */}
-          <div className="h-8 w-8 rounded bg-white text-black flex items-center justify-center font-bold text-xl">
+          {/* <div className="h-8 w-8 rounded bg-white text-black flex items-center justify-center font-bold text-xl">
             T
           </div>
-          <span className="text-xl font-semibold tracking-tight">True Media</span>
+          <span className="text-xl font-semibold tracking-tight">True Media</span> */}
         </div>
 
         <div className="relative z-10">
           <blockquote className="space-y-2">
             <p className="text-lg font-medium">
-              "Booking studio time has never been easier. The tenant dashboard gives us full control over our schedule and payments."
+              "Booking studio time has never been easier. The tenant dashboard
+              gives us full control over our schedule and payments."
             </p>
             <footer className="text-sm text-zinc-400">
               Marcus Chen &mdash; Producer
@@ -84,7 +90,9 @@ export default function RegisterPage() {
             <div className="h-8 w-8 rounded bg-black text-white flex items-center justify-center font-bold">
               T
             </div>
-            <span className="text-xl font-bold tracking-tight text-zinc-900">True Media</span>
+            <span className="text-xl font-bold tracking-tight text-zinc-900">
+              True Media
+            </span>
           </div>
 
           <div className="flex flex-col space-y-2 text-left mb-8">
@@ -132,7 +140,10 @@ export default function RegisterPage() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1">
-              <label htmlFor="name" className="text-sm font-medium text-zinc-700">
+              <label
+                htmlFor="name"
+                className="text-sm font-medium text-zinc-700"
+              >
                 Full Name
               </label>
               <input
@@ -147,7 +158,10 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="email" className="text-sm font-medium text-zinc-700">
+              <label
+                htmlFor="email"
+                className="text-sm font-medium text-zinc-700"
+              >
                 Email
               </label>
               <input
@@ -162,7 +176,10 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="phone" className="text-sm font-medium text-zinc-700">
+              <label
+                htmlFor="phone"
+                className="text-sm font-medium text-zinc-700"
+              >
                 Phone Number (Optional)
               </label>
               <input
@@ -176,7 +193,10 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="password" className="text-sm font-medium text-zinc-700">
+              <label
+                htmlFor="password"
+                className="text-sm font-medium text-zinc-700"
+              >
                 Password
               </label>
               <input
@@ -205,7 +225,10 @@ export default function RegisterPage() {
 
           <p className="mt-8 text-center text-sm text-zinc-500">
             Already have an account?{" "}
-            <a href="/sign-in" className="font-semibold text-black hover:underline">
+            <a
+              href="/sign-in"
+              className="font-semibold text-black hover:underline"
+            >
               Sign in
             </a>
           </p>

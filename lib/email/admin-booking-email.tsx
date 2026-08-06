@@ -1,4 +1,4 @@
-// components/emails/booking-confirmation.tsx
+// components/emails/admin-booking-email.tsx
 import * as React from 'react';
 import {
   Body,
@@ -13,34 +13,37 @@ import {
 } from 'react-email';
 import { Booking, Room, User } from '@/lib/generated/prisma/client';
 
-interface BookingConfirmationEmailProps {
+interface AdminBookingEmailProps {
   user: User;
   booking: Booking;
   room: Room;
 }
 
-export function BookingConfirmationEmail({
+export function AdminBookingEmail({
   user,
   booking,
   room,
-}: BookingConfirmationEmailProps) {
+}: AdminBookingEmailProps) {
   const bookingDate = new Date(booking.date);
 
   return (
     <Html lang="en">
       <Head />
-      <Preview>Your booking for {room.name} is confirmed</Preview>
+      <Preview>
+        New booking: {room.name} — {user.name}
+      </Preview>
       <Body style={main}>
         <Container style={container}>
-          <Heading style={heading}>Booking Confirmed!</Heading>
+          <Heading style={heading}>New Booking Received</Heading>
 
-          <Text style={text}>Hi {user.name},</Text>
           <Text style={text}>
-            Your booking for <strong>{room.name}</strong> has been successfully
-            confirmed.
+            A new booking has just come in. Here are the details:
           </Text>
 
           <Section style={detailsBox}>
+            <Text style={detailRow}>
+              <strong>Room:</strong> {room.name}
+            </Text>
             <Text style={detailRow}>
               <strong>Date:</strong> {bookingDate.toLocaleDateString()}
             </Text>
@@ -54,14 +57,35 @@ export function BookingConfirmationEmail({
 
           <Hr style={hr} />
 
-          <Text style={footerText}>Thank you for booking with us!</Text>
+          <Section style={detailsBox}>
+            <Text style={detailRow}>
+              <strong>Tenant:</strong> {user.name}
+            </Text>
+            <Text style={detailRow}>
+              <strong>Email:</strong> {user.email}
+            </Text>
+            {user.phone ? (
+              <Text style={detailRow}>
+                <strong>Phone:</strong> {user.phone}
+              </Text>
+            ) : null}
+            <Text style={detailRow}>
+              <strong>Booking ID:</strong> {booking.id}
+            </Text>
+          </Section>
+
+          <Hr style={hr} />
+
+          <Text style={footerText}>
+            You&apos;re receiving this because a booking was made on the platform.
+          </Text>
         </Container>
       </Body>
     </Html>
   );
 }
 
-export default BookingConfirmationEmail;
+export default AdminBookingEmail;
 
 const main: React.CSSProperties = {
   fontFamily:
@@ -108,7 +132,7 @@ const hr: React.CSSProperties = {
 };
 
 const footerText: React.CSSProperties = {
-  fontSize: '14px',
-  lineHeight: '22px',
-  color: '#555555',
+  fontSize: '13px',
+  lineHeight: '20px',
+  color: '#888888',
 };
