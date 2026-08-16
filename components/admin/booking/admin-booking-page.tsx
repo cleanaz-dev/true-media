@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarCheck } from "lucide-react";
+import { CalendarCheck, Plus } from "lucide-react";
 import { AdminPageHeader } from "../admin-page-header";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getAllBookings } from "@/lib/actions/get-all-bookings";
@@ -20,12 +20,16 @@ export default function AdminBookingPage({ bookings }: AdminBookingPageProps) {
     <div className="flex h-full flex-col">
       <div className="px-8 pt-8">
         <AdminPageHeader
+          title="Bookings"
           description="Manage all your room bookings."
           icon={CalendarCheck}
-          action={{
-            label: "New Booking",
-            onClick: () => console.log("open modal"),
-          }}
+          actions={[
+            {
+              label: "New Booking",
+              icon: Plus,
+              onClick: () => console.log("open modal"),
+            },
+          ]}
         />
       </div>
 
