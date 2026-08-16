@@ -1,14 +1,14 @@
 // app/admin/contracts/page.tsx
 "use client";
 
-import { useMemo } from "react";
+import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AdminPageHeader } from "../admin-page-header";
+import type { PageHeaderAction } from "@/components/admin/admin-page-header";
 import { ScrollText, Plus, Upload } from "lucide-react";
 import { AdminContractTable } from "./admin-contract-table";
 import { getAllContracts } from "@/lib/actions/get-all-contracts";
-import { useAdminLayout } from "@/context/layout-context";
-import type { PageHeaderAction } from "@/hooks/use-page-header";
+import { TestContractModal } from "./test-contract-modal"; // ← changed
 
 export type ContractsWithRelations = Awaited<
   ReturnType<typeof getAllContracts>
@@ -19,14 +19,14 @@ interface AdminContractsPageProps {
 }
 
 export function AdminContractsPage({ contracts }: AdminContractsPageProps) {
-  const { openModal } = useAdminLayout();
+  const [isTestOpen, setIsTestOpen] = useState(false);
 
-  const actions: PageHeaderAction[] = useMemo(() => [
+  const actions: PageHeaderAction[] = [
     {
       label: "Upload Template",
+      href:"/admin/contracts/upload",
       variant: "outline",
       icon: Upload,
-      onClick: () => openModal("UPLOAD_CONTRACT_TEMPLATE"), // Use standard openModal here
     },
     {
       label: "New Contract",
@@ -34,7 +34,7 @@ export function AdminContractsPage({ contracts }: AdminContractsPageProps) {
       variant: "default",
       icon: Plus,
     },
-  ], [openModal]);
+  ];
 
   return (
     <div className="flex h-full flex-col">
@@ -43,13 +43,15 @@ export function AdminContractsPage({ contracts }: AdminContractsPageProps) {
           title="Contracts"
           description="View and manage all contracts here."
           icon={ScrollText}
-          action={actions} 
+          actions={actions}
         />
       </div>
 
       <ScrollArea className="flex-1 px-4 md:px-8 pb-8 mt-6">
         <AdminContractTable contracts={contracts} />
       </ScrollArea>
+
+      <TestContractModal open={isTestOpen} onOpenChange={setIsTestOpen} />
     </div>
   );
 }

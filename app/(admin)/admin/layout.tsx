@@ -11,7 +11,6 @@ import { LayoutProvider } from "@/context/layout-context";
 import { UploadContractTemplateModal } from "@/components/admin/contracts/upload-contract-template-modal";
 import { GlobalModals } from "@/components/admin/global-modals";
 
-
 const fontSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
@@ -57,8 +56,8 @@ export default async function AdminLayout({
     <div
       className={`${fontSans.variable} ${fontMono.variable} font-[family-name:var(--font-admin-sans)]`}
     >
-      <HapioProvider>
-        <LayoutProvider>
+      <LayoutProvider>
+        <HapioProvider>
           <SidebarProvider>
             <AdminSidebar />
             <SidebarInset className="h-svh flex flex-col bg-slate-100">
@@ -68,11 +67,11 @@ export default async function AdminLayout({
               <Toaster />
             </SidebarInset>
 
-          {/* Mount all global modals here! */}
-          <GlobalModals />
+            {/* Mount all global modals here! */}
+            <GlobalModals />
           </SidebarProvider>
-        </LayoutProvider>
-      </HapioProvider>
+        </HapioProvider>
+      </LayoutProvider>
     </div>
   );
 }

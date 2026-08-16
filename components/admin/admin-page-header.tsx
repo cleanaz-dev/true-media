@@ -5,11 +5,37 @@ import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import {
-  usePageHeader,
-  type UsePageHeaderOptions,
-  type PageHeaderAction,
-} from "@/hooks/use-page-header";
+import type { LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
+import type { VariantProps } from "class-variance-authority";
+
+type ButtonVariant = VariantProps<typeof buttonVariants>["variant"];
+type ButtonSize = VariantProps<typeof buttonVariants>["size"];
+
+export interface PageHeaderAction {
+  label: ReactNode;
+  href?: string;
+  onClick?: () => void;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  icon?: LucideIcon;
+  disabled?: boolean;
+}
+
+export interface PageHeaderBadge {
+  label: ReactNode;
+  icon?: LucideIcon;
+  variant?: "default" | "secondary" | "outline" | "destructive";
+}
+
+interface AdminPageHeaderProps {
+  title: string;
+  description?: string;
+  icon?: LucideIcon;
+  actions?: PageHeaderAction[];
+  badges?: PageHeaderBadge[];
+  children?: ReactNode;
+}
 
 function HeaderActionButton({ action }: { action: PageHeaderAction }) {
   const Icon = action.icon;
@@ -49,16 +75,14 @@ function HeaderActionButton({ action }: { action: PageHeaderAction }) {
   );
 }
 
-export function AdminPageHeader(options: UsePageHeaderOptions) {
-  const {
-    title,
-    description,
-    icon: Icon,
-    actions = [], // FIX: The hook returns `actions` (plural). No aliasing needed here!
-    badges = [],
-    children,
-  } = usePageHeader(options);
-
+export function AdminPageHeader({
+  title,
+  description,
+  icon: Icon,
+  actions = [],
+  badges = [],
+  children,
+}: AdminPageHeaderProps) {
   const hasRightContent =
     Boolean(children) || badges.length > 0 || actions.length > 0;
 

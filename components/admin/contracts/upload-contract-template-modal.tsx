@@ -1,12 +1,10 @@
 // components/admin/contracts/upload-contract-template-modal.tsx
 "use client";
 
-import React, { useState, useEffect, useTransition } from "react";
-import { useAdminLayout } from "@/context/layout-context";
+import React, { useState, useEffect } from "react";
 import { createContractTemplateAction } from "@/lib/actions/contracts/contract-template";
 import { Button } from "@/components/ui/button";
 import {
-  X,
   FileCode2,
   UploadCloud,
   FileText,
@@ -14,13 +12,24 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
-export function UploadContractTemplateModal() {
-  const { activeModal, closeModal } = useAdminLayout();
-  const [isPending, startTransition] = useTransition();
+interface UploadContractTemplateModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
 
-  const isOpen = activeModal === "UPLOAD_CONTRACT_TEMPLATE";
-
+export function UploadContractTemplateModal({
+  open,
+  onOpenChange,
+}: UploadContractTemplateModalProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [body, setBody] = useState("");
@@ -30,30 +39,26 @@ export function UploadContractTemplateModal() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // CRASH FIX: Only use `isOpen` in the dependency array!
+  // Reset state when modal opens
   useEffect(() => {
-    if (!isOpen) return;
+    if (open) {
+      setName("");
+      setDescription("");
+      setBody("");
+      setS3Key("");
+      setIsActive(true);
+      setMode("body");
+      setError(null);
+      setSuccess(false);
+    }
+  }, [open]);
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeModal();
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    document.body.style.overflow = "hidden"; // Lock scroll
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "unset"; // Unlock scroll
-    };
-  }, [isOpen]); // <-- This prevents infinite loops!
-
-  if (!isOpen) return null;
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setIsSubmitting(true);
 
-    startTransition(async () => {
+    try {
       const res = await createContractTemplateAction({
         name,
         description,
@@ -68,40 +73,27 @@ export function UploadContractTemplateModal() {
         setSuccess(true);
         setTimeout(() => {
           setSuccess(false);
-          setName("");
-          setDescription("");
-          setBody("");
-          setS3Key("");
-          closeModal();
+          onOpenChange(false);
         }, 1000);
       }
-    });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background text-foreground animate-in fade-in-0 duration-200">
-      <header className="flex h-16 shrink-0 items-center justify-between border-b px-4 sm:px-8">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <FileText className="h-5 w-5" />
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold tracking-tight">Create Contract Template</h2>
-          </div>
-        </div>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>Create Contract Template</DialogTitle>
+          <DialogDescription>
+            Upload a template file or write HTML/Text content for the contract.
+          </DialogDescription>
+        </DialogHeader>
 
-        <button
-          type="button"
-          onClick={closeModal}
-          disabled={isPending}
-          className="rounded-md p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-        >
-          <X className="h-5 w-5" />
-        </button>
-      </header>
-
-      <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-8">
-        <form id="contract-template-form" onSubmit={handleSubmit} className="mx-auto max-w-3xl space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 py-4">
           {error && (
             <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
               <AlertCircle className="h-4 w-4 shrink-0" />
@@ -118,46 +110,93 @@ export function UploadContractTemplateModal() {
 
           <div className="space-y-4">
             <div>
-              <label className="mb-1.5 block text-sm font-medium">Template Name <span className="text-destructive">*</span></label>
-              <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
+              <label className="mb-1.5 block text-sm font-medium">
+                Template Name <span className="text-destructive">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              />
             </div>
 
             <div>
               <label className="mb-1.5 block text-sm font-medium">Description</label>
-              <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
+              <input
+                type="text"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              />
             </div>
           </div>
 
           <div className="space-y-2">
             <label className="block text-sm font-medium">Template Source</label>
             <div className="grid grid-cols-2 gap-3">
-              <button type="button" onClick={() => setMode("body")} className={`flex items-center justify-center gap-2 rounded-lg border p-3 text-sm font-medium transition ${mode === "body" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground"}`}>
+              <button
+                type="button"
+                onClick={() => setMode("body")}
+                className={`flex items-center justify-center gap-2 rounded-lg border p-3 text-sm font-medium transition ${
+                  mode === "body"
+                    ? "border-primary bg-primary/5 text-primary"
+                    : "border-border text-muted-foreground"
+                }`}
+              >
                 <FileCode2 className="h-4 w-4" /> Text / HTML
               </button>
 
-              <button type="button" onClick={() => setMode("file")} className={`flex items-center justify-center gap-2 rounded-lg border p-3 text-sm font-medium transition ${mode === "file" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground"}`}>
+              <button
+                type="button"
+                onClick={() => setMode("file")}
+                className={`flex items-center justify-center gap-2 rounded-lg border p-3 text-sm font-medium transition ${
+                  mode === "file"
+                    ? "border-primary bg-primary/5 text-primary"
+                    : "border-border text-muted-foreground"
+                }`}
+              >
                 <UploadCloud className="h-4 w-4" /> Static S3 PDF
               </button>
             </div>
           </div>
 
           {mode === "body" && (
-             <textarea rows={8} value={body} onChange={(e) => setBody(e.target.value)} className="w-full font-mono rounded-md border bg-background p-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
+            <textarea
+              rows={8}
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              className="w-full font-mono rounded-md border bg-background p-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            />
           )}
 
           {mode === "file" && (
-             <input type="text" value={s3Key} onChange={(e) => setS3Key(e.target.value)} className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
+            <input
+              type="text"
+              value={s3Key}
+              onChange={(e) => setS3Key(e.target.value)}
+              className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            />
           )}
-        </form>
-      </div>
 
-      <footer className="flex h-16 shrink-0 items-center justify-end gap-3 border-t bg-muted/30 px-4 sm:px-8">
-        <Button type="button" variant="outline" onClick={closeModal} disabled={isPending}>Cancel</Button>
-        <Button type="submit" form="contract-template-form" disabled={isPending || success}>
-          {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {success ? "Saved!" : "Save Template"}
-        </Button>
-      </footer>
-    </div>
+          <div className="flex justify-end gap-3 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting || success}>
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {success ? "Saved!" : "Save Template"}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
+
