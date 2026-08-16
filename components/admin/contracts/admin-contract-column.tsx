@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { ContractStatus } from "@/lib/generated/prisma/client";
-import { ContractsWIthRelations } from "./admin-contract-page";
+import { ContractsWithRelations } from "./admin-contract-page";
 
 const statusStyles: Record<ContractStatus, string> = {
   DRAFT: "bg-gray-100 text-gray-700 hover:bg-gray-100",
@@ -15,7 +15,7 @@ const statusStyles: Record<ContractStatus, string> = {
   VOIDED: "bg-red-100 text-red-700 hover:bg-red-100",
 };
 
-export const columns: ColumnDef<ContractsWIthRelations>[] = [
+export const columns: ColumnDef<ContractsWithRelations>[] = [
   {
     accessorKey: "title",
     header: "Title",

@@ -30,11 +30,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ContractsWIthRelations } from "./admin-contract-page";
+import { ContractsWithRelations } from "./admin-contract-page";
 import { AdminMobileContractsTable } from "./admin-mobile-contract-table";
 
 interface AdminContractTableProps {
-  contracts: ContractsWIthRelations[];
+  contracts: ContractsWithRelations[];
 }
 
 export function AdminContractTable({ contracts }: AdminContractTableProps) {

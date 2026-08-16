@@ -4,7 +4,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { ContractStatus } from "@/lib/generated/prisma/client";
-import { ContractsWIthRelations } from "./admin-contract-page";
+import { ContractsWithRelations } from "./admin-contract-page";
 
 const statusStyles: Record<ContractStatus, string> = {
   DRAFT: "bg-gray-100 text-gray-700 hover:bg-gray-100",
@@ -15,7 +15,7 @@ const statusStyles: Record<ContractStatus, string> = {
 };
 
 interface AdminMobileContractsTableProps {
-  contracts: ContractsWIthRelations[];
+  contracts: ContractsWithRelations[];
 }
 
 export function AdminMobileContractsTable({
