@@ -1,4 +1,3 @@
-// components/admin/admin-page-header.tsx
 "use client";
 
 import Link from "next/link";
@@ -29,9 +28,11 @@ export interface PageHeaderBadge {
 }
 
 interface AdminPageHeaderProps {
-  title: string;
+  title?: string;
   description?: string;
   icon?: LucideIcon;
+  /** Single action button — convenience prop, folded into `actions` internally */
+  action?: PageHeaderAction;
   actions?: PageHeaderAction[];
   badges?: PageHeaderBadge[];
   children?: ReactNode;
@@ -79,21 +80,25 @@ export function AdminPageHeader({
   title,
   description,
   icon: Icon,
+  action,
   actions = [],
   badges = [],
   children,
 }: AdminPageHeaderProps) {
+  const allActions = action ? [action, ...actions] : actions;
   const hasRightContent =
-    Boolean(children) || badges.length > 0 || actions.length > 0;
+    Boolean(children) || badges.length > 0 || allActions.length > 0;
 
   return (
     <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div className="space-y-1">
         <div className="flex items-center gap-2.5">
           {Icon && <Icon className="h-6 w-6 text-primary" />}
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            {title}
-          </h1>
+          {title && (
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+              {title}
+            </h1>
+          )}
         </div>
         {description && (
           <p className="text-sm text-muted-foreground">{description}</p>
@@ -118,7 +123,7 @@ export function AdminPageHeader({
             );
           })}
 
-          {actions.map((act, idx) => (
+          {allActions.map((act, idx) => (
             <HeaderActionButton key={idx} action={act} />
           ))}
         </div>

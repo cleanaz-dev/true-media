@@ -1,6 +1,6 @@
 "use client"
 import { getAllRooms } from "@/lib/actions/get-all-rooms";
-import { DoorOpen } from "lucide-react";
+import { DoorOpen, Plus } from "lucide-react";
 import { AdminPageHeader } from "../admin-page-header";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AdminRoomCard } from "@/components/admin/room/admin-room-card";
@@ -14,17 +14,20 @@ interface AdminRoomPageProps {
 }
 
 export function AdminRoomPage({ rooms }: AdminRoomPageProps) {
-  
   return (
     <div className="flex h-full flex-col">
       <div className="px-8 pt-8">
         <AdminPageHeader
+          title="Rooms"
           description="View and manage all rooms here."
           icon={DoorOpen}
-          action={{
-            label: "New Room",
-            href: "/admin/rooms/new",
-          }}
+          actions={[
+            {
+              label: "New Room",
+              href: "/admin/rooms/new",
+              icon: Plus,
+            },
+          ]}
         />
       </div>
 
@@ -34,7 +37,7 @@ export function AdminRoomPage({ rooms }: AdminRoomPageProps) {
             No rooms found. Get started by creating one.
           </div>
         ) : (
-           <div className="mx-auto w-full max-w-7xl grid grid-cols-1 gap-6 xl:grid-cols-1">
+          <div className="mx-auto w-full max-w-7xl grid grid-cols-1 gap-6 xl:grid-cols-1">
             {rooms.map((room) => (
               <AdminRoomCard key={room.id} room={room} />
             ))}
