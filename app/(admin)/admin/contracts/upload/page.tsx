@@ -13,7 +13,6 @@ export default async function Page() {
             </p>
           </p>
         </div>
-
         <AdminContractForm />
       </div>
     </div>
