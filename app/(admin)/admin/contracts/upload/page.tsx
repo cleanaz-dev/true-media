@@ -1,4 +1,4 @@
-import { AdminContractForm } from "@/components/admin/contracts/admin-contract-form";
+import { UploadContractTemplateForm } from "@/components/admin/contracts/upload-contract-template-form";
 
 export default async function Page() {
   return (
@@ -7,13 +7,11 @@ export default async function Page() {
         <div className="mb-6">
           <h1 className="text-2xl font-bold">Upload Template</h1>
           <p className="text-gray-600">
-            <p className="text-gray-600">
-              Upload contract templates to significantly improve the accuracy
-              and quality of contracts generated for your use.
-            </p>
+            Upload contract templates to significantly improve the accuracy
+            and quality of contracts generated for your use.
           </p>
         </div>
-        <AdminContractForm />
+        <UploadContractTemplateForm />
       </div>
     </div>
   );

@@ -1,12 +1,8 @@
-import { prisma } from "@/lib/prisma"; // Adjust to your prisma path
 import { AdminContractForm } from "@/components/admin/contracts/admin-contract-form";
+import { getAllContractTemplates } from "@/lib/actions/contracts/get-all-templates";
 
 export default async function NewContractPage() {
-  // const templates = await prisma.contractTemplate.findMany({
-  //   where: { isActive: true },
-  //   select: { id: true, name: true },
-  //   orderBy: { name: "asc" },
-  // });
+  const templates = await getAllContractTemplates();
 
   return (
     <div className="h-full overflow-hidden rounded-xl bg-white shadow-sm">
@@ -19,7 +15,7 @@ export default async function NewContractPage() {
           </p>
         </div>
 
-        <AdminContractForm />
+        <AdminContractForm templates={templates} />
       </div>
     </div>
   );
