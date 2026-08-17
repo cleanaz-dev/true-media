@@ -8,7 +8,6 @@ import { auth } from "@/lib/auth";
 import { HapioProvider } from "@/context/hapio-contex";
 import { Toaster } from "@/components/ui/toast";
 import { LayoutProvider } from "@/context/layout-context";
-import { UploadContractTemplateModal } from "@/components/admin/contracts/upload-contract-template-modal";
 import { GlobalModals } from "@/components/admin/global-modals";
 
 const fontSans = Plus_Jakarta_Sans({
