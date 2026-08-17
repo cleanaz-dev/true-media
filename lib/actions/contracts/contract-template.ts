@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { uploadFilePrivate } from "@/lib/aws/s3";
 import { randomUUID } from "crypto";
-import { PDFParse } from "pdf-parse";
+// ❌ REMOVE top-level import: import { PDFParse } from "pdf-parse";
 
 export interface CreateContractTemplateInput {
   name: string;
@@ -48,6 +48,8 @@ export async function uploadContractTemplateFileAction(file: File) {
 
     let extractedText = "";
     try {
+      // ✅ Dynamically import pdf-parse ONLY when uploading
+      const { PDFParse } = await import("pdf-parse");
       const parser = new PDFParse({ data: buffer });
       const result = await parser.getText();
       extractedText = result.text.trim();
