@@ -31,6 +31,7 @@ export const auth = betterAuth({
     "http://admin.lvh.me:3000",
     "https://admin.true-media.vercel.app",
     "https://*.true-media.vercel.app",
+    "https://*.truemediastudios.com"
   ],
 
   advanced: {
