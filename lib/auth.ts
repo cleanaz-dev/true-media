@@ -22,6 +22,8 @@ export const auth = betterAuth({
       "*.lvh.me:3000",
       "true-media.vercel.app",
       "*.true-media.vercel.app",
+      "truemediasports.com",
+      "*.truemediasports.com",
     ],
     fallback: "http://localhost:3000",
   },
@@ -31,15 +33,18 @@ export const auth = betterAuth({
     "http://admin.lvh.me:3000",
     "https://admin.true-media.vercel.app",
     "https://*.true-media.vercel.app",
-    "https://*.truemediastudios.com"
+    "https://truemediasports.com",
+    "https://*.truemediasports.com",
   ],
 
-  advanced: {
+   advanced: {
     crossSubDomainCookies: {
       enabled: true,
+      // 👇 DO NOT HARDCODE .true-media.vercel.app
+      // If on truemediasports.com, the browser will drop cookies set for vercel.app
       domain:
         process.env.NODE_ENV === "production"
-          ? ".true-media.vercel.app"
+          ? ".truemediasports.com" 
           : ".lvh.me",
     },
     useSecureCookies: process.env.NODE_ENV === "production",
