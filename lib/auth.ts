@@ -22,29 +22,37 @@ export const auth = betterAuth({
       "*.lvh.me:3000",
       "true-media.vercel.app",
       "*.true-media.vercel.app",
-      "truemediasports.com",
-      "*.truemediasports.com",
+      // 👇 Your actual live domains
+      "truemediastudios.com",
+      "www.truemediastudios.com",
+      "*.truemediastudios.com",
     ],
-    fallback: "http://localhost:3000",
+    fallback:
+      process.env.NODE_ENV === "production"
+        ? "https://www.truemediastudios.com"
+        : "http://localhost:3000",
   },
+
   trustedOrigins: [
     "http://localhost:3000",
     "http://lvh.me:3000",
     "http://admin.lvh.me:3000",
+    "https://true-media.vercel.app",
     "https://admin.true-media.vercel.app",
     "https://*.true-media.vercel.app",
-    "https://truemediasports.com",
-    "https://*.truemediasports.com",
+    // 👇 Include both apex, www, and wildcard subdomains
+    "https://truemediastudios.com",
+    "https://www.truemediastudios.com",
+    "https://*.truemediastudios.com",
   ],
 
-   advanced: {
+  advanced: {
     crossSubDomainCookies: {
       enabled: true,
-      // 👇 DO NOT HARDCODE .true-media.vercel.app
-      // If on truemediasports.com, the browser will drop cookies set for vercel.app
+      // 👇 Root domain with leading dot covers www, admin, etc.
       domain:
         process.env.NODE_ENV === "production"
-          ? ".truemediasports.com" 
+          ? ".truemediastudios.com"
           : ".lvh.me",
     },
     useSecureCookies: process.env.NODE_ENV === "production",
@@ -54,7 +62,6 @@ export const auth = betterAuth({
     enabled: true,
   },
 
-  // ADD THIS BLOCK
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,
@@ -64,7 +71,7 @@ export const auth = betterAuth({
 
   user: {
     fields: {
-      image: "avatarUrl", // map Better Auth's "image" to your "avatarUrl" column
+      image: "avatarUrl",
     },
     additionalFields: {
       role: {
