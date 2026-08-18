@@ -47,6 +47,13 @@ export function InviteSigneeEmail({
             </Button>
           </Section>
 
+          {/* Desktop Recommendation Tip */}
+          <Section style={tipBoxStyle}>
+            <Text style={tipTextStyle}>
+              💻 <strong>Tip:</strong> For the easiest reading experience with multi-page documents, we recommend opening this link on a desktop or laptop computer.
+            </Text>
+          </Section>
+
           <Hr style={dividerStyle} />
 
           <Text style={footerTextStyle}>
@@ -99,7 +106,7 @@ const textStyle: React.CSSProperties = {
 
 const buttonContainerStyle: React.CSSProperties = {
   textAlign: 'center',
-  margin: '28px 0',
+  margin: '28px 0 16px 0',
 };
 
 const buttonStyle: React.CSSProperties = {
@@ -111,6 +118,22 @@ const buttonStyle: React.CSSProperties = {
   fontSize: '15px',
   textDecoration: 'none',
   display: 'inline-block',
+};
+
+const tipBoxStyle: React.CSSProperties = {
+  backgroundColor: '#f8fafc',
+  border: '1px solid #e2e8f0',
+  borderRadius: '6px',
+  padding: '10px 14px',
+  margin: '16px 0 20px 0',
+};
+
+const tipTextStyle: React.CSSProperties = {
+  fontSize: '13px',
+  lineHeight: '18px',
+  color: '#64748b',
+  margin: '0',
+  textAlign: 'center',
 };
 
 const dividerStyle: React.CSSProperties = {
