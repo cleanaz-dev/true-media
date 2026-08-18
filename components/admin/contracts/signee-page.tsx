@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import dynamic from "next/dynamic";
 import { SigneeWithContract } from "@/lib/actions/contracts/get-signee";
 import { submitSignature } from "@/lib/actions/contracts/submit-signature";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -13,6 +14,20 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 import { SignaturePad, SignaturePadRef } from "@/components/admin/contracts/signature-pad";
+
+// Dynamically import PdfViewer to prevent SSR issues with canvas/pdfjs
+const PdfViewer = dynamic(
+  () => import("@/components/admin/contracts/pdf-viewer").then((mod) => mod.PdfViewer),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-full text-muted-foreground gap-2">
+        <Loader2 className="w-5 h-5 animate-spin" />
+        <span>Loading document viewer...</span>
+      </div>
+    ),
+  }
+);
 
 interface SigneePageProps {
   signee: SigneeWithContract;
@@ -101,8 +116,8 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
             className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5 shrink-0 text-xs sm:text-sm")}
           >
             <ExternalLink className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Open PDF</span>
-            <span className="sm:hidden">PDF</span>
+            <span className="hidden sm:inline">Open Original</span>
+            <span className="sm:hidden">Open</span>
           </a>
         )}
       </header>
@@ -133,34 +148,15 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
 
       {/* Main Grid */}
       <main className="flex-1 p-4 sm:p-6 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* PDF Viewer */}
+        {/* Multi-page PDF Viewer */}
         <div
           className={cn(
-            "lg:col-span-7 h-[65vh] sm:h-[75vh] lg:h-[850px] bg-card rounded-xl border shadow-sm overflow-hidden flex flex-col",
+            "lg:col-span-7 h-[70vh] lg:h-[850px] bg-card rounded-xl border shadow-sm overflow-hidden flex flex-col",
             mobileTab === "sign" ? "hidden lg:flex" : "flex"
           )}
         >
           {pdfUrl ? (
-            <div className="relative w-full h-full flex flex-col">
-              {/* Mobile notice banner to open full screen if iframe gives rendering issues */}
-              <div className="lg:hidden bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-900 px-3 py-2 text-xs flex items-center justify-between text-amber-900 dark:text-amber-200">
-                <span>Trouble scrolling the document?</span>
-                <a
-                  href={pdfUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-medium underline inline-flex items-center gap-1"
-                >
-                  Open in reader <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
-
-              <iframe
-                src={`${pdfUrl}#toolbar=0`}
-                title="Contract Preview"
-                className="w-full flex-1 border-0"
-              />
-            </div>
+            <PdfViewer url={pdfUrl} />
           ) : (
             <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
               Document preview is currently unavailable.
