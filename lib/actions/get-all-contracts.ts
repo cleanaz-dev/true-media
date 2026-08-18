@@ -6,6 +6,9 @@ export async function getAllContracts() {
             createdBy: true,
             template: true,
             signers: true,
+        },
+        orderBy: {
+            createdAt: "desc"
         }
     })
     return contracts
