@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { SigneeWithContract } from "@/lib/actions/contracts/get-signee";
 import { submitSignature } from "@/lib/actions/contracts/submit-signature";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CheckCircle, Download, ExternalLink, FileCheck, Loader2 } from "lucide-react";
+import { CheckCircle2, ExternalLink, FileCheck, Loader2, RotateCcw, PenTool, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -19,27 +19,103 @@ interface SigneePageProps {
 
 export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
   const isAlreadySigned = signee.status === "SIGNED";
-  const [signature, setSignature] = useState(signee.name || "");
-  const [agreed, setAgreed] = useState(false);
+
+  // Form states
+  const [printedName, setPrintedName] = useState(signee.name || "");
+  const [hasReviewedDoc, setHasReviewedDoc] = useState(false);
+  const [agreedToEsign, setAgreedToEsign] = useState(false);
+  const [hasDrawnSignature, setHasDrawnSignature] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSignedSuccessfully, setHasSignedSuccessfully] = useState(isAlreadySigned);
 
+  // Canvas Drawing Refs
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const isDrawing = useRef(false);
+
+  // Canvas setup
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.strokeStyle = "#0f172a";
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+  }, [hasSignedSuccessfully]);
+
+  // Drawing Handlers
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    isDrawing.current = true;
+    setHasDrawnSignature(true);
+
+    const rect = canvas.getBoundingClientRect();
+    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+
+    ctx.beginPath();
+    ctx.moveTo(clientX - rect.left, clientY - rect.top);
+  };
+
+  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDrawing.current) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+
+    ctx.lineTo(clientX - rect.left, clientY - rect.top);
+    ctx.stroke();
+  };
+
+  const stopDrawing = () => {
+    isDrawing.current = false;
+  };
+
+  const clearSignature = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    setHasDrawnSignature(false);
+  };
+
+  // Submit Handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!agreed) {
-      toast.error("Please agree to the legal terms before signing");
+    if (!hasReviewedDoc || !agreedToEsign) {
+      toast.error("Please complete all acknowledgement checkboxes.");
       return;
     }
-    if (!signature.trim()) {
-      toast.error("Please enter your signature");
+    if (!printedName.trim()) {
+      toast.error("Please enter your printed legal name.");
       return;
     }
+    if (!hasDrawnSignature || !canvasRef.current) {
+      toast.error("Please draw your signature in the signature box.");
+      return;
+    }
+
+    const signatureImage = canvasRef.current.toDataURL("image/png");
 
     try {
       setIsSubmitting(true);
       await submitSignature({
         signToken: signee.signToken!,
-        signatureTxt: signature,
+        printedName: printedName.trim(),
+        signatureImage,
       });
 
       setHasSignedSuccessfully(true);
@@ -51,6 +127,13 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
     }
   };
 
+  const isFormValid =
+    printedName.trim().length > 0 &&
+    hasDrawnSignature &&
+    hasReviewedDoc &&
+    agreedToEsign &&
+    !isSubmitting;
+
   return (
     <div className="min-h-screen bg-muted/30 flex flex-col">
       {/* Top Navbar */}
@@ -61,29 +144,27 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
           </div>
           <div>
             <h1 className="text-base font-semibold">{signee.contract.title}</h1>
-            <p className="text-xs text-muted-foreground">Signer: {signee.name} ({signee.email})</p>
+            <p className="text-xs text-muted-foreground">Signer: {signee.email}</p>
           </div>
         </div>
 
         {pdfUrl && (
-          <div className="flex items-center gap-2">
-            <a
-              href={pdfUrl}
-              target="_blank"
-              rel="noreferrer"
-              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5")}
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              Open PDF
-            </a>
-          </div>
+          <a
+            href={pdfUrl}
+            target="_blank"
+            rel="noreferrer"
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5")}
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            Open PDF
+          </a>
         )}
       </header>
 
-      {/* Main Signing Area */}
+      {/* Main Grid */}
       <main className="flex-1 p-6 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* PDF Viewer */}
-        <div className="lg:col-span-8 h-[780px] bg-card rounded-xl border shadow-sm overflow-hidden flex flex-col">
+        {/* PDF Viewer on Left */}
+        <div className="lg:col-span-7 h-[850px] bg-card rounded-xl border shadow-sm overflow-hidden flex flex-col">
           {pdfUrl ? (
             <iframe
               src={`${pdfUrl}#toolbar=0`}
@@ -97,70 +178,137 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
           )}
         </div>
 
-        {/* Action / Signing Card */}
-        <div className="lg:col-span-4 space-y-6">
+        {/* Signing Card on Right */}
+        <div className="lg:col-span-5 space-y-6">
           {hasSignedSuccessfully ? (
             <Card className="border-emerald-500/20 bg-emerald-50/50 dark:bg-emerald-950/20">
               <CardHeader className="text-center pb-3">
-                <CheckCircle className="w-12 h-12 text-emerald-600 mx-auto mb-2" />
+                <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto mb-2" />
                 <CardTitle className="text-emerald-900 dark:text-emerald-100">
-                  Document Signed
+                  Document Signed &amp; Recorded
                 </CardTitle>
                 <CardDescription>
-                  Thank you! You have successfully reviewed and signed this document.
+                  Thank you! Your signature has been legally recorded with a cryptographic audit trail.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="text-center text-xs text-muted-foreground pt-2">
-                Signed on: {signee.signedAt ? new Date(signee.signedAt).toLocaleString() : new Date().toLocaleString()}
+              <CardContent className="text-center text-xs text-muted-foreground space-y-1 pt-2">
+                <p>
+                  <strong>Signed by:</strong> {printedName || signee.name}
+                </p>
+                <p>
+                  <strong>Timestamp:</strong>{" "}
+                  {signee.signedAt ? new Date(signee.signedAt).toLocaleString() : new Date().toLocaleString()}
+                </p>
               </CardContent>
             </Card>
           ) : (
-            <Card>
-              <CardHeader>
-                <CardTitle>Sign Document</CardTitle>
+            <Card className="shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <PenTool className="w-5 h-5 text-primary" />
+                  Review &amp; Sign
+                </CardTitle>
                 <CardDescription>
-                  Review the document on the left and enter your signature below.
+                  Complete your printed name, signature, and legal acknowledgements.
                 </CardDescription>
               </CardHeader>
 
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-5">
-                  <div className="space-y-2">
-                    <Label htmlFor="signature">Signature (Type Full Legal Name)</Label>
+                  {/* 1. Printed Legal Name */}
+                  <div className="space-y-1.5">
+                    <Label htmlFor="printedName" className="text-xs font-semibold">
+                      Full Legal Name (Printed) *
+                    </Label>
                     <Input
-                      id="signature"
-                      value={signature}
-                      onChange={(e) => setSignature(e.target.value)}
-                      placeholder="e.g. John Doe"
-                      className="font-serif italic text-lg tracking-wide bg-muted/40"
+                      id="printedName"
+                      value={printedName}
+                      onChange={(e) => setPrintedName(e.target.value)}
+                      placeholder="e.g. John Michael Doe"
                       required
                     />
-                    <p className="text-[11px] text-muted-foreground">
-                      Typing your name acts as your binding electronic signature.
-                    </p>
                   </div>
 
-                  <div className="flex items-start space-x-3 pt-2">
-                    <Checkbox
-                      id="terms"
-                      checked={agreed}
-                      onCheckedChange={(val) => setAgreed(!!val)}
-                    />
-                    <Label
-                      htmlFor="terms"
-                      className="text-xs text-muted-foreground font-normal leading-snug cursor-pointer"
-                    >
-                      I agree to be legally bound by this document and acknowledge my electronic signature is valid.
-                    </Label>
+                  {/* 2. Signature Drawing Canvas */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-semibold">Draw Signature *</Label>
+                      {hasDrawnSignature && (
+                        <button
+                          type="button"
+                          onClick={clearSignature}
+                          className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+                        >
+                          <RotateCcw className="w-3 h-3" /> Clear
+                        </button>
+                      )}
+                    </div>
+                    <div className="relative border-2 border-dashed rounded-lg bg-white overflow-hidden">
+                      <canvas
+                        ref={canvasRef}
+                        width={400}
+                        height={130}
+                        onMouseDown={startDrawing}
+                        onMouseMove={draw}
+                        onMouseUp={stopDrawing}
+                        onMouseLeave={stopDrawing}
+                        onTouchStart={startDrawing}
+                        onTouchMove={draw}
+                        onTouchEnd={stopDrawing}
+                        className="w-full h-[130px] cursor-crosshair touch-none"
+                      />
+                      {!hasDrawnSignature && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-xs text-muted-foreground/50">
+                          Sign here with mouse or finger
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={!agreed || !signature.trim() || isSubmitting}
-                  >
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Complete &amp; Sign
+                  {/* 3. Acknowledgements & Consent */}
+                  <div className="space-y-3 pt-2 border-t text-xs">
+                    <div className="flex items-start space-x-2.5">
+                      <Checkbox
+                        id="reviewCheck"
+                        checked={hasReviewedDoc}
+                        onCheckedChange={(val) => setHasReviewedDoc(!!val)}
+                      />
+                      <Label
+                        htmlFor="reviewCheck"
+                        className="text-xs text-muted-foreground font-normal leading-snug cursor-pointer"
+                      >
+                        I confirm that I have carefully read and reviewed all pages and terms of this document.
+                      </Label>
+                    </div>
+
+                    <div className="flex items-start space-x-2.5">
+                      <Checkbox
+                        id="esignCheck"
+                        checked={agreedToEsign}
+                        onCheckedChange={(val) => setAgreedToEsign(!!val)}
+                      />
+                      <Label
+                        htmlFor="esignCheck"
+                        className="text-xs text-muted-foreground font-normal leading-snug cursor-pointer"
+                      >
+                        I consent to the use of electronic records and agree that my electronic signature is as legally binding as a handwritten pen signature.
+                      </Label>
+                    </div>
+                  </div>
+
+                  {/* Submit Button */}
+                  <Button type="submit" className="w-full gap-2" disabled={!isFormValid}>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Recording Signature...
+                      </>
+                    ) : (
+                      <>
+                        <ShieldCheck className="w-4 h-4" />
+                        Adopt &amp; Sign Document
+                      </>
+                    )}
                   </Button>
                 </form>
               </CardContent>

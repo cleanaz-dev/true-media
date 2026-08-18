@@ -8,14 +8,15 @@ import { revalidatePath } from "next/cache";
 
 interface SubmitSignatureParams {
   signToken: string;
-  signatureTxt: string; // The typed name or canvas signature string
+  printedName: string;      // "John Doe"
+  signatureImage: string;   // "data:image/png;base64,..."
 }
 
 export async function submitSignature({
   signToken,
-  signatureTxt,
+  printedName,
+  signatureImage,
 }: SubmitSignatureParams) {
-  // 1. Capture Client Audit Info
   const headerList = await headers();
   const ipAddress =
     headerList.get("x-forwarded-for")?.split(",")[0] ||
@@ -23,14 +24,11 @@ export async function submitSignature({
     "unknown";
   const userAgent = headerList.get("user-agent") || "unknown";
 
-  // 2. Fetch the Signer + Contract
   const currentSigner = await prisma.contractSigner.findUnique({
     where: { signToken },
     include: {
       contract: {
-        include: {
-          signers: true,
-        },
+        include: { signers: true },
       },
     },
   });
@@ -43,19 +41,20 @@ export async function submitSignature({
     throw new Error("You have already signed this contract.");
   }
 
-  // 3. Mark current signer as SIGNED with audit trail
+  // 1. Save both printed name and drawn signature image
   await prisma.contractSigner.update({
     where: { id: currentSigner.id },
     data: {
+      name: printedName,
+      signatureTxt: signatureImage,
       status: "SIGNED",
       signedAt: new Date(),
-      signatureTxt,
       ipAddress,
       userAgent,
     },
   });
 
-  // 4. Fetch all signers to check if everyone is done
+  // 2. Check if all parties have completed signing
   const allSigners = await prisma.contractSigner.findMany({
     where: { contractId: currentSigner.contractId },
   });
@@ -64,21 +63,16 @@ export async function submitSignature({
     s.id === currentSigner.id ? true : s.status === "SIGNED"
   );
 
-  // 5. If ALL parties have signed -> Complete contract and notify everyone
   if (isEveryoneSigned) {
     await prisma.contract.update({
       where: { id: currentSigner.contractId },
-      data: {
-        status: "COMPLETED",
-      },
+      data: { status: "COMPLETED" },
     });
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-    // Send the completion email to all signers
     for (const signer of allSigners) {
       if (!signer.email || !signer.signToken) continue;
-
       const downloadUrl = `${appUrl}/onboarding/${signer.signToken}`;
 
       try {
