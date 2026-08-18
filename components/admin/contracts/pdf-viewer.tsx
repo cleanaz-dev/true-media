@@ -9,14 +9,85 @@ import { Button } from "@/components/ui/button";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
-// Set worker safely
-pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+// IMPORTANT: pin the worker to the *exact* version react-pdf bundles internally,
+// and load it same-origin via the local package instead of a CDN. This avoids
+// the version-mismatch / cross-origin module-worker failures that crash mobile
+// Safari and Chrome-on-Android silently.
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.min.mjs",
+  import.meta.url
+).toString();
 
 interface PdfViewerProps {
   url: string;
 }
 
+// Simple mobile check — canvas-based multi-page rendering is what crashes on
+// phones (memory pressure + worker issues). Mobile browsers render PDFs
+// natively and reliably, so just hand off to that instead of fighting pdf.js.
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const ua = navigator.userAgent || "";
+    const mobileUA = /Android|iPhone|iPad|iPod|Mobile/i.test(ua);
+    const narrow = window.innerWidth < 768;
+    setIsMobile(mobileUA || narrow);
+  }, []);
+  return isMobile;
+}
+
 export function PdfViewer({ url }: PdfViewerProps) {
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return <MobilePdfViewer url={url} />;
+  }
+
+  return <DesktopPdfViewer url={url} />;
+}
+
+// ---------------------------------------------------------------------------
+// Mobile: native browser PDF rendering, no canvas/worker involved at all.
+// ---------------------------------------------------------------------------
+function MobilePdfViewer({ url }: PdfViewerProps) {
+  const [failed, setFailed] = useState(false);
+
+  if (failed) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-3 text-center p-6">
+        <AlertCircle className="w-8 h-8 text-destructive" />
+        <div>
+          <p className="text-sm font-semibold">Unable to preview document</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Use the &ldquo;Open Original&rdquo; button above to view it.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <object
+      data={`${url}#toolbar=0`}
+      type="application/pdf"
+      className="w-full h-full"
+      onError={() => setFailed(true)}
+    >
+      {/* Fallback rendered if <object> can't display the PDF at all */}
+      <div className="flex flex-col items-center justify-center h-full gap-3 text-center p-6">
+        <p className="text-sm font-semibold">Preview not supported on this browser</p>
+        <p className="text-xs text-muted-foreground">
+          Use the &ldquo;Open Original&rdquo; button above to view it.
+        </p>
+      </div>
+    </object>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Desktop: keep the nicer paginated + zoom experience via react-pdf.
+// ---------------------------------------------------------------------------
+function DesktopPdfViewer({ url }: PdfViewerProps) {
   const [numPages, setNumPages] = useState<number>(1);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [scale, setScale] = useState<number>(1.0);
@@ -24,7 +95,6 @@ export function PdfViewer({ url }: PdfViewerProps) {
   const [loadError, setLoadError] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Measure container width safely
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -57,7 +127,6 @@ export function PdfViewer({ url }: PdfViewerProps) {
 
   return (
     <div className="flex flex-col h-full w-full bg-muted/20">
-      {/* Viewer Controls Toolbar */}
       <div className="flex items-center justify-between px-3 py-2 bg-background border-b text-xs sticky top-0 z-10">
         <div className="flex items-center gap-1">
           <Button
@@ -87,7 +156,6 @@ export function PdfViewer({ url }: PdfViewerProps) {
           </Button>
         </div>
 
-        {/* Zoom Controls */}
         <div className="flex items-center gap-1">
           <Button
             type="button"
@@ -115,7 +183,6 @@ export function PdfViewer({ url }: PdfViewerProps) {
         </div>
       </div>
 
-      {/* PDF Canvas Container */}
       <div
         ref={containerRef}
         className="flex-1 overflow-auto p-4 flex items-start justify-center"
