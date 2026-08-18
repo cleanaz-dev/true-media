@@ -16,6 +16,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UserPlus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import InviteSigneeEmail from "@/lib/email/templates/invite-signee-email";
+import { inviteSignee } from "@/lib/actions/contracts/invite-signee";
 
 interface InviteSigneesDrawerProps {
   contractId: string;
@@ -27,24 +29,28 @@ export function InviteSigneesDrawer({ contractId }: InviteSigneesDrawerProps) {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
 
-  const handleInvite = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
 
-    try {
-      setLoading(true);
-      // await inviteSignee({ contractId, email, name });
-      
-      toast.success(`Invite sent to ${email}`);
-      setEmail("");
-      setName("");
-      setOpen(false);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to send invite");
-    } finally {
-      setLoading(false);
-    }
-  };
+const handleInvite = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!email) return;
+
+  try {
+    setLoading(true);
+
+    // Call the server action with contractId, email, name
+    await inviteSignee({ contractId, email, name });
+
+    toast.success(`Invite sent to ${email}`);
+    setEmail("");
+    setName("");
+    setOpen(false);
+  } catch (err) {
+    console.error("Invite error:", err);
+    toast.error(err instanceof Error ? err.message : "Failed to send invite");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <Drawer open={open} onOpenChange={setOpen}>

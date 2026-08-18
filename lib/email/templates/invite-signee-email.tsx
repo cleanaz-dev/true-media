@@ -23,7 +23,7 @@ export function InviteSigneeEmail({
   signerName,
   contractTitle,
   signUrl,
-  inviterName = 'The Team',
+  inviterName = 'The True Sports Team',
 }: InviteSigneeEmailProps) {
   const greeting = signerName ? `Hello ${signerName},` : 'Hello,';
 
