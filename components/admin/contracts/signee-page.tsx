@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { SigneeWithContract } from "@/lib/actions/contracts/get-signee";
 import { submitSignature } from "@/lib/actions/contracts/submit-signature";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -8,9 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CheckCircle2, ExternalLink, FileCheck, Loader2, RotateCcw, PenTool, ShieldCheck } from "lucide-react";
+import { CheckCircle2, ExternalLink, FileCheck, Loader2, ShieldCheck, PenTool } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+
+// ─── Import the new component ───
+import { SignaturePad, SignaturePadRef } from "@/components/admin/contracts/signature-pad";
 
 interface SigneePageProps {
   signee: SigneeWithContract;
@@ -24,77 +27,17 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
   const [printedName, setPrintedName] = useState(signee.name || "");
   const [hasReviewedDoc, setHasReviewedDoc] = useState(false);
   const [agreedToEsign, setAgreedToEsign] = useState(false);
-  const [hasDrawnSignature, setHasDrawnSignature] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSignedSuccessfully, setHasSignedSuccessfully] = useState(isAlreadySigned);
 
-  // Canvas Drawing Refs
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const isDrawing = useRef(false);
-
-  // Canvas setup
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    ctx.strokeStyle = "#0f172a";
-    ctx.lineWidth = 2.5;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-  }, [hasSignedSuccessfully]);
-
-  // Drawing Handlers
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    isDrawing.current = true;
-    setHasDrawnSignature(true);
-
-    const rect = canvas.getBoundingClientRect();
-    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
-    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
-
-    ctx.beginPath();
-    ctx.moveTo(clientX - rect.left, clientY - rect.top);
-  };
-
-  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    if (!isDrawing.current) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
-    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
-
-    ctx.lineTo(clientX - rect.left, clientY - rect.top);
-    ctx.stroke();
-  };
-
-  const stopDrawing = () => {
-    isDrawing.current = false;
-  };
-
-  const clearSignature = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    setHasDrawnSignature(false);
-  };
+  // ─── Signature pad ref ───
+  const signaturePadRef = useRef<SignaturePadRef>(null);
+  const [signatureEmpty, setSignatureEmpty] = useState(true);
 
   // Submit Handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!hasReviewedDoc || !agreedToEsign) {
       toast.error("Please complete all acknowledgement checkboxes.");
       return;
@@ -103,12 +46,12 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
       toast.error("Please enter your printed legal name.");
       return;
     }
-    if (!hasDrawnSignature || !canvasRef.current) {
+    if (signatureEmpty || !signaturePadRef.current) {
       toast.error("Please draw your signature in the signature box.");
       return;
     }
 
-    const signatureImage = canvasRef.current.toDataURL("image/png");
+    const signatureImage = signaturePadRef.current.toDataURL("image/png");
 
     try {
       setIsSubmitting(true);
@@ -129,7 +72,7 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
 
   const isFormValid =
     printedName.trim().length > 0 &&
-    hasDrawnSignature &&
+    !signatureEmpty &&
     hasReviewedDoc &&
     agreedToEsign &&
     !isSubmitting;
@@ -229,41 +172,12 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
                     />
                   </div>
 
-                  {/* 2. Signature Drawing Canvas */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-xs font-semibold">Draw Signature *</Label>
-                      {hasDrawnSignature && (
-                        <button
-                          type="button"
-                          onClick={clearSignature}
-                          className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
-                        >
-                          <RotateCcw className="w-3 h-3" /> Clear
-                        </button>
-                      )}
-                    </div>
-                    <div className="relative border-2 border-dashed rounded-lg bg-white overflow-hidden">
-                      <canvas
-                        ref={canvasRef}
-                        width={400}
-                        height={130}
-                        onMouseDown={startDrawing}
-                        onMouseMove={draw}
-                        onMouseUp={stopDrawing}
-                        onMouseLeave={stopDrawing}
-                        onTouchStart={startDrawing}
-                        onTouchMove={draw}
-                        onTouchEnd={stopDrawing}
-                        className="w-full h-[130px] cursor-crosshair touch-none"
-                      />
-                      {!hasDrawnSignature && (
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-xs text-muted-foreground/50">
-                          Sign here with mouse or finger
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  {/* 2. Signature Pad (replaced) */}
+                  <SignaturePad
+                    ref={signaturePadRef}
+                    onChange={(empty) => setSignatureEmpty(empty)}
+                    height={130}
+                  />
 
                   {/* 3. Acknowledgements & Consent */}
                   <div className="space-y-3 pt-2 border-t text-xs">
