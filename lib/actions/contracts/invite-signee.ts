@@ -1,3 +1,4 @@
+// lib/actions/contracts/invite-signee.ts
 "use server";
 
 import { prisma } from "@/lib/prisma";
@@ -26,7 +27,7 @@ export async function inviteSignee({
   // 1. Generate unique signToken
   const signToken = crypto.randomBytes(32).toString("hex");
 
-  // 2. Create ContractSigner record
+  // 2. Create the signer in the DB
   const signer = await prisma.contractSigner.create({
     data: {
       contractId,
@@ -37,21 +38,34 @@ export async function inviteSignee({
     },
   });
 
-  // 3. Build the token URL
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  const signUrl = `${appUrl}/onboarding/${signToken}`;
+  // 3. Try to send the email
+  try {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const signUrl = `${appUrl}/onboarding/${signToken}`;
 
-  // 4. Send Email
-  await sendEmail({
-    to: email,
-    subject: `Signature Request: ${contract.title}`,
-    react: InviteSigneeEmail({
-      signerName: signer.name,
-      contractTitle: contract.title,
-      signUrl: signUrl,
-    }),
-  });
+    await sendEmail({
+      to: email,
+      subject: `Signature Request: ${contract.title}`,
+      react: InviteSigneeEmail({
+        signerName: signer.name,
+        contractTitle: contract.title,
+        signUrl: signUrl,
+      }),
+    });
+  } catch (err) {
+    // ⚠️ ROLLBACK: If email delivery fails, remove the signer so there's no ghost record
+    console.error("[inviteSignee] Email failed to send, rolling back signer creation:", err);
+    
+    await prisma.contractSigner.delete({
+      where: { id: signer.id },
+    });
 
+    throw new Error(
+      err instanceof Error ? `Failed to send email: ${err.message}` : "Failed to send invitation email."
+    );
+  }
+
+  // 4. If everything succeeded:
   revalidatePath(`/admin/contracts/${contractId}`);
   return { success: true, signer };
 }
