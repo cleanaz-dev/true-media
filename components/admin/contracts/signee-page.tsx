@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef } from "react";
-import dynamic from "next/dynamic";
 import { SigneeWithContract } from "@/lib/actions/contracts/get-signee";
 import { submitSignature } from "@/lib/actions/contracts/submit-signature";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -9,25 +8,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CheckCircle2, ExternalLink, FileCheck, Loader2, ShieldCheck, PenTool, FileText } from "lucide-react";
+import {
+  CheckCircle2,
+  ExternalLink,
+  FileCheck,
+  Loader2,
+  ShieldCheck,
+  PenTool,
+  Download,
+  Eye,
+} from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 import { SignaturePad, SignaturePadRef } from "@/components/admin/contracts/signature-pad";
-
-// Dynamically import PdfViewer to prevent SSR issues with canvas/pdfjs
-const PdfViewer = dynamic(
-  () => import("@/components/admin/contracts/pdf-viewer").then((mod) => mod.PdfViewer),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-full text-muted-foreground gap-2">
-        <Loader2 className="w-5 h-5 animate-spin" />
-        <span>Loading document viewer...</span>
-      </div>
-    ),
-  }
-);
 
 interface SigneePageProps {
   signee: SigneeWithContract;
@@ -43,9 +37,6 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
   const [agreedToEsign, setAgreedToEsign] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSignedSuccessfully, setHasSignedSuccessfully] = useState(isAlreadySigned);
-
-  // Mobile Tab State ("document" | "sign")
-  const [mobileTab, setMobileTab] = useState<"document" | "sign">("document");
 
   // Signature pad ref
   const signaturePadRef = useRef<SignaturePadRef>(null);
@@ -97,7 +88,7 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
   return (
     <div className="min-h-screen bg-muted/30 flex flex-col">
       {/* Top Navbar */}
-      <header className="bg-background border-b px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+      <header className="bg-background border-b px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between sticky top-0 z-20 shadow-xs">
         <div className="flex items-center gap-3 truncate">
           <div className="p-2 bg-primary/10 rounded-lg text-primary shrink-0">
             <FileCheck className="w-5 h-5" />
@@ -116,47 +107,23 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
             className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5 shrink-0 text-xs sm:text-sm")}
           >
             <ExternalLink className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Open Original</span>
-            <span className="sm:hidden">Open</span>
+            <span className="hidden sm:inline">Open PDF in New Tab</span>
+            <span className="sm:hidden">Open PDF</span>
           </a>
         )}
       </header>
 
-      {/* Mobile-Only Tab Switcher */}
-      <div className="lg:hidden bg-background border-b px-4 py-2 flex gap-2 sticky top-[57px] z-10">
-        <Button
-          type="button"
-          variant={mobileTab === "document" ? "default" : "outline"}
-          size="sm"
-          className="flex-1 text-xs gap-1.5"
-          onClick={() => setMobileTab("document")}
-        >
-          <FileText className="w-3.5 h-3.5" />
-          1. View Document
-        </Button>
-        <Button
-          type="button"
-          variant={mobileTab === "sign" ? "default" : "outline"}
-          size="sm"
-          className="flex-1 text-xs gap-1.5"
-          onClick={() => setMobileTab("sign")}
-        >
-          <PenTool className="w-3.5 h-3.5" />
-          2. Sign Document
-        </Button>
-      </div>
-
-      {/* Main Grid */}
+      {/* Main Container */}
       <main className="flex-1 p-4 sm:p-6 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Multi-page PDF Viewer */}
-        <div
-          className={cn(
-            "lg:col-span-7 h-[70vh] lg:h-[850px] bg-card rounded-xl border shadow-sm overflow-hidden flex flex-col",
-            mobileTab === "sign" ? "hidden lg:flex" : "flex"
-          )}
-        >
+        
+        {/* DESKTOP ONLY: Standard Iframe on the Left */}
+        <div className="hidden lg:flex lg:col-span-7 h-[850px] bg-card rounded-xl border shadow-xs overflow-hidden flex-col">
           {pdfUrl ? (
-            <PdfViewer url={pdfUrl} />
+            <iframe
+              src={`${pdfUrl}#toolbar=0`}
+              title="Contract Document Preview"
+              className="w-full h-full border-0"
+            />
           ) : (
             <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
               Document preview is currently unavailable.
@@ -164,15 +131,45 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
           )}
         </div>
 
-        {/* Signing Card */}
-        <div
-          className={cn(
-            "lg:col-span-5 space-y-6",
-            mobileTab === "document" ? "hidden lg:block" : "block"
+        {/* MOBILE & DESKTOP: Right Side (or Full Width on Mobile) */}
+        <div className="w-full lg:col-span-5 space-y-4">
+          
+          {/* MOBILE ONLY: Document Download & Open Card */}
+          {pdfUrl && !hasSignedSuccessfully && (
+            <Card className="lg:hidden border-primary/20 bg-primary/5 shadow-xs">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-primary">
+                  <FileCheck className="w-4 h-4" />
+                  Review Contract PDF
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Tap below to open and scroll through all pages in your phone&apos;s native viewer.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0 flex gap-2">
+                <a
+                  href={pdfUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={cn(buttonVariants({ variant: "default", size: "sm" }), "flex-1 gap-2 text-xs font-medium")}
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  Open Document
+                </a>
+                <a
+                  href={pdfUrl}
+                  download
+                  className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5 text-xs")}
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Download
+                </a>
+              </CardContent>
+            </Card>
           )}
-        >
+
           {hasSignedSuccessfully ? (
-            <Card className="border-emerald-500/20 bg-emerald-50/50 dark:bg-emerald-950/20">
+            <Card className="border-emerald-500/20 bg-emerald-50/50 dark:bg-emerald-950/20 shadow-xs">
               <CardHeader className="text-center pb-3">
                 <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto mb-2" />
                 <CardTitle className="text-emerald-900 dark:text-emerald-100">
@@ -193,14 +190,14 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
               </CardContent>
             </Card>
           ) : (
-            <Card className="shadow-sm">
+            <Card className="shadow-xs">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <PenTool className="w-5 h-5 text-primary" />
-                  Review &amp; Sign
+                  Sign Document
                 </CardTitle>
                 <CardDescription>
-                  Complete your printed name, signature, and legal acknowledgements.
+                  Enter your legal printed name, draw your signature, and submit.
                 </CardDescription>
               </CardHeader>
 
