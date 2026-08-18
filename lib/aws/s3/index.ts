@@ -63,3 +63,16 @@ export async function uploadFilePrivate(
   );
   return key;
 }
+
+export async function getFileBuffer(key: string): Promise<Buffer> {
+  const command = new GetObjectCommand({ Bucket: bucket, Key: key });
+  const response = await s3Client.send(command);
+
+  if (!response.Body) {
+    throw new Error(`Failed to read file from S3: ${key}`);
+  }
+
+  // Convert the S3 stream to a Buffer
+  const byteArray = await response.Body.transformToByteArray();
+  return Buffer.from(byteArray);
+}

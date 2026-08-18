@@ -1,4 +1,4 @@
-// emails/register-email.tsx
+// lib/email/templates/register-email.tsx
 import { Html, Body, Container, Text, Heading, Button } from 'react-email';
 
 export function RegisterEmail({ name, body }: { name: string; body: string }) {
