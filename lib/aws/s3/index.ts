@@ -76,3 +76,14 @@ export async function getFileBuffer(key: string): Promise<Buffer> {
   const byteArray = await response.Body.transformToByteArray();
   return Buffer.from(byteArray);
 }
+
+export async function getPdfSignedUrl(key: string, expiresInSeconds = 900) {
+  const command = new GetObjectCommand({
+    Bucket: bucket,
+    Key: key,
+    ResponseContentType: "application/pdf",
+    ResponseContentDisposition: "inline",
+  });
+  return getSignedUrl(s3Client, command, { expiresIn: expiresInSeconds });
+}
+ 

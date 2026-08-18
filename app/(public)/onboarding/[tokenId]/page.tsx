@@ -1,7 +1,7 @@
 // app/(public)/onboarding/[tokenId]/page.tsx
 import { notFound } from "next/navigation";
 import { getSignee } from "@/lib/actions/contracts/get-signee";
-import { getPresignedUrl } from "@/lib/aws/s3";
+import { getPdfSignedUrl, getPresignedUrl } from "@/lib/aws/s3";
 import { SigneePage } from "@/components/admin/contracts/signee-page";
 
 interface Params {
@@ -26,7 +26,7 @@ export default async function Page({ params }: Params) {
 
   let pdfUrl: string | null = null;
   if (s3KeyToView) {
-    pdfUrl = await getPresignedUrl(s3KeyToView);
+    pdfUrl = await getPdfSignedUrl(s3KeyToView);
   }
 
   return <SigneePage signee={signee} pdfUrl={pdfUrl} />;
