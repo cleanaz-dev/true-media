@@ -33,12 +33,12 @@ export function InviteSigneeEmail({
       <Head />
       <Body style={mainStyle}>
         <Container style={containerStyle}>
-          {/* Branded Black Top Header with Logo */}
+          {/* Solid True Black Header Bar */}
           <Section style={headerStyle}>
             <Img
               src="https://djap9svz4m9h0.cloudfront.net/ts-mini-logo.png"
               alt="True Sports Logo"
-              width="140"
+              width="80"
               style={logoStyle}
             />
           </Section>
@@ -120,18 +120,20 @@ const mainStyle: React.CSSProperties = {
 const containerStyle: React.CSSProperties = {
   backgroundColor: '#ffffff',
   margin: '0 auto',
-  borderRadius: '10px',
+  borderRadius: '8px',
   border: '1px solid #e2e8f0',
   maxWidth: '560px',
   overflow: 'hidden',
-  boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.05)',
 };
 
-// Black Top Bar
+// Force pure solid black across all clients
 const headerStyle: React.CSSProperties = {
   backgroundColor: '#000000',
+  width: '100%',
   padding: '24px 0',
   textAlign: 'center',
+  borderTopLeftRadius: '8px',
+  borderTopRightRadius: '8px',
 };
 
 const logoStyle: React.CSSProperties = {
@@ -223,7 +225,6 @@ const linkStyle: React.CSSProperties = {
   wordBreak: 'break-all',
 };
 
-// Footer Styles
 const footerContainerStyle: React.CSSProperties = {
   backgroundColor: '#f8fafc',
   borderTop: '1px solid #e2e8f0',
