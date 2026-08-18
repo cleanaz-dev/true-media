@@ -1,3 +1,5 @@
+//api/webhooks/system-task/[systemTaskId]
+
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { TaskType } from "@/lib/generated/prisma/client";

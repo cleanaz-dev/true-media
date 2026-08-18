@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { uploadFilePrivate } from "@/lib/aws/s3";
 import { randomUUID } from "crypto";
-// ❌ REMOVE top-level import: import { PDFParse } from "pdf-parse";
+
 
 export interface CreateContractTemplateInput {
   name: string;
