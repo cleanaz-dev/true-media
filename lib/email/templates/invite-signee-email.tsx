@@ -10,7 +10,6 @@ import {
   Button,
   Hr,
   Link,
-  Img,
 } from 'react-email';
 
 export interface InviteSigneeEmailProps {
@@ -24,7 +23,7 @@ export function InviteSigneeEmail({
   signerName,
   contractTitle,
   signUrl,
-  inviterName = 'The True Sports Team',
+  inviterName = 'True Sports & Entertainment',
 }: InviteSigneeEmailProps) {
   const greeting = signerName ? `Hello ${signerName},` : 'Hello,';
 
@@ -33,24 +32,16 @@ export function InviteSigneeEmail({
       <Head />
       <Body style={mainStyle}>
         <Container style={containerStyle}>
-          {/* Solid True Black Header Bar */}
-          <Section style={headerStyle}>
-            <Img
-              src="https://djap9svz4m9h0.cloudfront.net/ts-mini-logo.png"
-              alt="True Sports Logo"
-              width="80"
-              style={logoStyle}
-            />
-          </Section>
-
           {/* Main Content Body */}
           <Section style={contentStyle}>
+            <Text style={companyBadgeStyle}>{inviterName.toUpperCase()}</Text>
+            
             <Heading style={headingStyle}>Signature Request</Heading>
 
             <Text style={textStyle}>{greeting}</Text>
 
             <Text style={textStyle}>
-              <strong>{inviterName}</strong> has prepared and invited you to review and sign the following agreement:
+              You have been invited to review and electronically sign the following agreement:
             </Text>
 
             {/* Document Highlight Box */}
@@ -65,17 +56,17 @@ export function InviteSigneeEmail({
               </Button>
             </Section>
 
-            {/* Desktop Recommendation Tip */}
+            {/* Desktop Tip */}
             <Section style={tipBoxStyle}>
               <Text style={tipTextStyle}>
-                💻 <strong>Tip:</strong> For the best viewing experience with multi-page agreements, we recommend opening this link on a desktop or laptop computer.
+                💡 <strong>Tip:</strong> For the easiest reading experience with multi-page agreements, we recommend opening this link on a desktop computer.
               </Text>
             </Section>
 
             <Hr style={dividerStyle} />
 
             <Text style={subLinkTextStyle}>
-              If the button above does not work, copy and paste this secure link into your browser:
+              If the button does not work, copy and paste this link into your browser:
               <br />
               <Link href={signUrl} style={linkStyle}>
                 {signUrl}
@@ -83,21 +74,12 @@ export function InviteSigneeEmail({
             </Text>
           </Section>
 
-          {/* Professional Footer */}
+          {/* Simple Clean Footer */}
           <Section style={footerContainerStyle}>
-            <Text style={footerLinksStyle}>
-              <Link href="https://truesportslive.com" style={footerLinkItemStyle} target="_blank">
-                truesportslive.com
-              </Link>
-              &nbsp;&nbsp;•&nbsp;&nbsp;
-              <Link href="https://truemediastudios.com" style={footerLinkItemStyle} target="_blank">
-                truemediastudios.com
-              </Link>
-            </Text>
             <Text style={footerLegalStyle}>
               © {new Date().getFullYear()} True Sports &amp; Entertainment Inc. All rights reserved.
               <br />
-              This is a secure automated signature request. Please do not reply directly to this email.
+              This is a secure automated signature request.
             </Text>
           </Section>
         </Container>
@@ -111,7 +93,7 @@ export default InviteSigneeEmail;
 // --- Styles ---
 
 const mainStyle: React.CSSProperties = {
-  backgroundColor: '#f1f5f9',
+  backgroundColor: '#f8fafc',
   fontFamily:
     '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
   padding: '40px 12px',
@@ -122,37 +104,29 @@ const containerStyle: React.CSSProperties = {
   margin: '0 auto',
   borderRadius: '8px',
   border: '1px solid #e2e8f0',
-  maxWidth: '560px',
+  maxWidth: '520px',
   overflow: 'hidden',
-};
-
-// Force pure solid black across all clients
-const headerStyle: React.CSSProperties = {
-  backgroundColor: '#000000',
-  width: '100%',
-  padding: '24px 0',
-  textAlign: 'center',
-  borderTopLeftRadius: '8px',
-  borderTopRightRadius: '8px',
-};
-
-const logoStyle: React.CSSProperties = {
-  margin: '0 auto',
-  display: 'block',
-  height: 'auto',
 };
 
 const contentStyle: React.CSSProperties = {
   padding: '32px 32px 24px 32px',
 };
 
+const companyBadgeStyle: React.CSSProperties = {
+  fontSize: '11px',
+  fontWeight: '700',
+  letterSpacing: '1px',
+  color: '#64748b',
+  margin: '0 0 8px 0',
+};
+
 const headingStyle: React.CSSProperties = {
-  fontSize: '20px',
+  fontSize: '22px',
   fontWeight: '700',
   color: '#0f172a',
   marginTop: '0',
   marginBottom: '16px',
-  letterSpacing: '-0.3px',
+  letterSpacing: '-0.4px',
 };
 
 const textStyle: React.CSSProperties = {
@@ -166,8 +140,8 @@ const documentHighlightBox: React.CSSProperties = {
   backgroundColor: '#f8fafc',
   border: '1px solid #e2e8f0',
   borderRadius: '6px',
-  padding: '12px 16px',
-  margin: '18px 0',
+  padding: '14px 16px',
+  margin: '20px 0',
 };
 
 const documentTitleStyle: React.CSSProperties = {
@@ -183,7 +157,7 @@ const buttonContainerStyle: React.CSSProperties = {
 };
 
 const buttonStyle: React.CSSProperties = {
-  backgroundColor: '#000000',
+  backgroundColor: '#0f172a',
   color: '#ffffff',
   padding: '14px 28px',
   borderRadius: '6px',
@@ -228,20 +202,8 @@ const linkStyle: React.CSSProperties = {
 const footerContainerStyle: React.CSSProperties = {
   backgroundColor: '#f8fafc',
   borderTop: '1px solid #e2e8f0',
-  padding: '24px 32px',
+  padding: '20px 32px',
   textAlign: 'center',
-};
-
-const footerLinksStyle: React.CSSProperties = {
-  fontSize: '13px',
-  color: '#64748b',
-  margin: '0 0 10px 0',
-};
-
-const footerLinkItemStyle: React.CSSProperties = {
-  color: '#0f172a',
-  fontWeight: '500',
-  textDecoration: 'none',
 };
 
 const footerLegalStyle: React.CSSProperties = {
