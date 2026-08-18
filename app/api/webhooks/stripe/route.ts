@@ -70,7 +70,7 @@ export async function POST(req: Request) {
             // Make sure this matches the domain you verified in Resend!
             from: "bookings@yourdomain.com",
             subject: `Booking Confirmed: ${booking.room.name}`,
-            template: BookingConfirmationEmail({
+            react: BookingConfirmationEmail({
               user: booking.user,
               booking,
               room: booking.room,

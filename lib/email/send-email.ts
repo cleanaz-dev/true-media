@@ -7,6 +7,9 @@ interface SendEmailOptions {
   react: ReactElement; // Accepts any React template component
   from?: string;
   replyTo?: string | string[];
+  userId?: string | null;
+  templateSlug?: string | null;
+  
 }
 
 export async function sendEmail({
