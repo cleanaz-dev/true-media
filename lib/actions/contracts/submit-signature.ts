@@ -4,12 +4,14 @@ import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email/send-email";
 import { ContractSignedCompletedEmail } from "@/lib/email/templates/contract-completed";
+import { getFileBuffer, uploadFilePrivate } from "@/lib/aws/s3";
+import { sealContractWithSignatures } from "@/lib/pdf/contract-seal";
 import { revalidatePath } from "next/cache";
 
 interface SubmitSignatureParams {
   signToken: string;
-  printedName: string;      // "John Doe"
-  signatureImage: string;   // "data:image/png;base64,..."
+  printedName: string;
+  signatureImage: string; // data:image/png;base64,...
 }
 
 export async function submitSignature({
@@ -24,6 +26,7 @@ export async function submitSignature({
     "unknown";
   const userAgent = headerList.get("user-agent") || "unknown";
 
+  // 1. Fetch current signer
   const currentSigner = await prisma.contractSigner.findUnique({
     where: { signToken },
     include: {
@@ -41,20 +44,21 @@ export async function submitSignature({
     throw new Error("You have already signed this contract.");
   }
 
-  // 1. Save both printed name and drawn signature image
+  // 2. Mark this signer as SIGNED with real canvas PNG and timestamp
+  const now = new Date();
   await prisma.contractSigner.update({
     where: { id: currentSigner.id },
     data: {
       name: printedName,
       signatureTxt: signatureImage,
       status: "SIGNED",
-      signedAt: new Date(),
+      signedAt: now,
       ipAddress,
       userAgent,
     },
   });
 
-  // 2. Check if all parties have completed signing
+  // 3. Fetch all signers to check completion
   const allSigners = await prisma.contractSigner.findMany({
     where: { contractId: currentSigner.contractId },
   });
@@ -63,31 +67,75 @@ export async function submitSignature({
     s.id === currentSigner.id ? true : s.status === "SIGNED"
   );
 
-  if (isEveryoneSigned) {
-    await prisma.contract.update({
-      where: { id: currentSigner.contractId },
-      data: { status: "COMPLETED" },
-    });
+  // 4. Seal PDF if all parties have completed
+  if (isEveryoneSigned && currentSigner.contract.originalS3Key) {
+    try {
+      // Download original clean PDF
+      const originalPdfBuffer = await getFileBuffer(
+        currentSigner.contract.originalS3Key
+      );
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+      // Prepare signer audit data with updated values
+      const signersToSeal = allSigners.map((s) => {
+        if (s.id === currentSigner.id) {
+          return {
+            name: printedName,
+            email: s.email,
+            signatureTxt: signatureImage,
+            signedAt: now,
+            ipAddress,
+          };
+        }
+        return {
+          name: s.name,
+          email: s.email,
+          signatureTxt: s.signatureTxt,
+          signedAt: s.signedAt,
+          ipAddress: s.ipAddress,
+        };
+      });
 
-    for (const signer of allSigners) {
-      if (!signer.email || !signer.signToken) continue;
-      const downloadUrl = `${appUrl}/onboarding/${signer.signToken}`;
+      const sealedPdfBuffer = await sealContractWithSignatures({
+        originalPdfBuffer,
+        signers: signersToSeal,
+        contractTitle: currentSigner.contract.title,
+      });
 
-      try {
-        await sendEmail({
-          to: signer.email,
-          subject: `Fully Executed: ${currentSigner.contract.title}`,
-          react: ContractSignedCompletedEmail({
-            recipientName: signer.name,
-            contractTitle: currentSigner.contract.title,
-            downloadUrl,
-          }),
-        });
-      } catch (emailErr) {
-        console.error(`[submitSignature] Failed sending completion email to ${signer.email}:`, emailErr);
+      // Save as unique completed key to prevent cache collisions
+      const completedKey = `contracts/completed/${currentSigner.contractId}-${Date.now()}.pdf`;
+      await uploadFilePrivate(completedKey, sealedPdfBuffer, "application/pdf");
+
+      await prisma.contract.update({
+        where: { id: currentSigner.contractId },
+        data: {
+          status: "COMPLETED",
+          completedS3Key: completedKey,
+        },
+      });
+
+      // Send clean emails without emojis in the subject line
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+      for (const signer of allSigners) {
+        if (!signer.email || !signer.signToken) continue;
+        const downloadUrl = `${appUrl}/onboarding/${signer.signToken}`;
+
+        try {
+          await sendEmail({
+            to: signer.email,
+            subject: `Completed Agreement: ${currentSigner.contract.title}`, // Clean subject line (no spam symbols)
+            react: ContractSignedCompletedEmail({
+              recipientName: signer.id === currentSigner.id ? printedName : signer.name,
+              contractTitle: currentSigner.contract.title,
+              downloadUrl,
+            }),
+          });
+        } catch (emailErr) {
+          console.error(`[submitSignature] Error sending email to ${signer.email}:`, emailErr);
+        }
       }
+    } catch (sealErr) {
+      console.error("[submitSignature] Failed to seal PDF:", sealErr);
     }
   }
 

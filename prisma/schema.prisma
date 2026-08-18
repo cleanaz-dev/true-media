@@ -364,22 +364,22 @@ model ContractSigner {
   contract   Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
   contractId String
 
-  // Link to a user if they have an account, but keeping email as a string 
-  // allows you to send contracts to people who aren't in your DB yet.
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId String?
   email  String
-  name   String // Name of the person signing
+  name   String
 
   status SignerStatus @default(PENDING)
 
-  // Audit Trail (Crucial for legal binding)
-  signedAt     DateTime?
-  signatureTxt String? // E.g., The typed name "John Doe" or a base64 signature image
-  ipAddress    String? // Capture IP for audit purposes
-  userAgent    String? // Capture browser info for audit purposes
+  // 💡 Add this: Each signer gets their own unique completed PDF
+  completedS3Key String?
 
-  // Security: A unique token used in the URL sent via email (e.g., myapp.com/sign/[token])
+  // Audit Trail
+  signedAt     DateTime?
+  signatureTxt String? // Base64 PNG image of signature
+  ipAddress    String?
+  userAgent    String?
+
   signToken String? @unique
 
   createdAt DateTime @default(now())
@@ -388,7 +388,6 @@ model ContractSigner {
   @@index([contractId])
   @@index([userId])
 }
-
 model SystemTask {
   id          String     @id @default(cuid())
   type        TaskType
