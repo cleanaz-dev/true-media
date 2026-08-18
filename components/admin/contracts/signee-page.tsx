@@ -8,11 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CheckCircle2, ExternalLink, FileCheck, Loader2, ShieldCheck, PenTool } from "lucide-react";
+import { CheckCircle2, ExternalLink, FileCheck, Loader2, ShieldCheck, PenTool, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-// ─── Import the new component ───
 import { SignaturePad, SignaturePadRef } from "@/components/admin/contracts/signature-pad";
 
 interface SigneePageProps {
@@ -30,7 +29,10 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSignedSuccessfully, setHasSignedSuccessfully] = useState(isAlreadySigned);
 
-  // ─── Signature pad ref ───
+  // Mobile Tab State ("document" | "sign")
+  const [mobileTab, setMobileTab] = useState<"document" | "sign">("document");
+
+  // Signature pad ref
   const signaturePadRef = useRef<SignaturePadRef>(null);
   const [signatureEmpty, setSignatureEmpty] = useState(true);
 
@@ -80,14 +82,14 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
   return (
     <div className="min-h-screen bg-muted/30 flex flex-col">
       {/* Top Navbar */}
-      <header className="bg-background border-b px-6 py-4 flex items-center justify-between sticky top-0 z-10 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg text-primary">
+      <header className="bg-background border-b px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+        <div className="flex items-center gap-3 truncate">
+          <div className="p-2 bg-primary/10 rounded-lg text-primary shrink-0">
             <FileCheck className="w-5 h-5" />
           </div>
-          <div>
-            <h1 className="text-base font-semibold">{signee.contract.title}</h1>
-            <p className="text-xs text-muted-foreground">Signer: {signee.email}</p>
+          <div className="truncate">
+            <h1 className="text-sm sm:text-base font-semibold truncate">{signee.contract.title}</h1>
+            <p className="text-xs text-muted-foreground truncate">Signer: {signee.email}</p>
           </div>
         </div>
 
@@ -96,33 +98,83 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
             href={pdfUrl}
             target="_blank"
             rel="noreferrer"
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5")}
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5 shrink-0 text-xs sm:text-sm")}
           >
             <ExternalLink className="w-3.5 h-3.5" />
-            Open PDF
+            <span className="hidden sm:inline">Open PDF</span>
+            <span className="sm:hidden">PDF</span>
           </a>
         )}
       </header>
 
+      {/* Mobile-Only Tab Switcher */}
+      <div className="lg:hidden bg-background border-b px-4 py-2 flex gap-2 sticky top-[57px] z-10">
+        <Button
+          type="button"
+          variant={mobileTab === "document" ? "default" : "outline"}
+          size="sm"
+          className="flex-1 text-xs gap-1.5"
+          onClick={() => setMobileTab("document")}
+        >
+          <FileText className="w-3.5 h-3.5" />
+          1. View Document
+        </Button>
+        <Button
+          type="button"
+          variant={mobileTab === "sign" ? "default" : "outline"}
+          size="sm"
+          className="flex-1 text-xs gap-1.5"
+          onClick={() => setMobileTab("sign")}
+        >
+          <PenTool className="w-3.5 h-3.5" />
+          2. Sign Document
+        </Button>
+      </div>
+
       {/* Main Grid */}
-      <main className="flex-1 p-6 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* PDF Viewer on Left */}
-        <div className="lg:col-span-7 h-[850px] bg-card rounded-xl border shadow-sm overflow-hidden flex flex-col">
+      <main className="flex-1 p-4 sm:p-6 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* PDF Viewer */}
+        <div
+          className={cn(
+            "lg:col-span-7 h-[65vh] sm:h-[75vh] lg:h-[850px] bg-card rounded-xl border shadow-sm overflow-hidden flex flex-col",
+            mobileTab === "sign" ? "hidden lg:flex" : "flex"
+          )}
+        >
           {pdfUrl ? (
-            <iframe
-              src={`${pdfUrl}#toolbar=0`}
-              title="Contract Preview"
-              className="w-full h-full border-0"
-            />
+            <div className="relative w-full h-full flex flex-col">
+              {/* Mobile notice banner to open full screen if iframe gives rendering issues */}
+              <div className="lg:hidden bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-900 px-3 py-2 text-xs flex items-center justify-between text-amber-900 dark:text-amber-200">
+                <span>Trouble scrolling the document?</span>
+                <a
+                  href={pdfUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-medium underline inline-flex items-center gap-1"
+                >
+                  Open in reader <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+
+              <iframe
+                src={`${pdfUrl}#toolbar=0`}
+                title="Contract Preview"
+                className="w-full flex-1 border-0"
+              />
+            </div>
           ) : (
-            <div className="flex items-center justify-center h-full text-muted-foreground">
+            <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
               Document preview is currently unavailable.
             </div>
           )}
         </div>
 
-        {/* Signing Card on Right */}
-        <div className="lg:col-span-5 space-y-6">
+        {/* Signing Card */}
+        <div
+          className={cn(
+            "lg:col-span-5 space-y-6",
+            mobileTab === "document" ? "hidden lg:block" : "block"
+          )}
+        >
           {hasSignedSuccessfully ? (
             <Card className="border-emerald-500/20 bg-emerald-50/50 dark:bg-emerald-950/20">
               <CardHeader className="text-center pb-3">
@@ -172,7 +224,7 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
                     />
                   </div>
 
-                  {/* 2. Signature Pad (replaced) */}
+                  {/* 2. Signature Pad */}
                   <SignaturePad
                     ref={signaturePadRef}
                     onChange={(empty) => setSignatureEmpty(empty)}
