@@ -345,6 +345,7 @@ model Contract {
   // Document Storage
   originalS3Key  String? // The original unsigned document (e.g., generated PDF)
   completedS3Key String? // The final document with all signatures appended
+  markdownText   String?
 
   // Relations
   template   ContractTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)

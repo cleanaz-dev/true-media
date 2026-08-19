@@ -27,17 +27,17 @@ export async function inviteSignee({
     });
     console.log("[inviteSignee] Contract fetched", {
       found: !!contract,
-      hasTemplate: !!contract?.template,
-      bodyLength: contract?.template?.body?.length ?? 0,
+      hasMarkdownText: !!contract?.markdownText,
+      markdownLength: contract?.markdownText?.length ?? 0,
     });
   } catch (dbErr) {
     console.error("[inviteSignee] DB ERROR fetching contract:", dbErr);
     throw dbErr;
   }
 
-  if (!contract || !contract.template?.body) {
-    console.error("[inviteSignee] MISSING contract or template body");
-    throw new Error("Contract or contract template content not found.");
+  if (!contract || !contract.markdownText) {
+    console.error("[inviteSignee] MISSING contract or markdownText");
+    throw new Error("Contract markdown text not found.");
   }
 
   const signToken = crypto.randomBytes(32).toString("hex");
@@ -87,7 +87,7 @@ export async function inviteSignee({
   const payload = {
     mode: "PERSONALIZE",
     title: contract.title,
-    body: contract.template.body,
+    body: contract.markdownText,
     webhookUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/webhooks/system-task/${systemTask.id}`,
     metadata: {
       signerId: signer.id,

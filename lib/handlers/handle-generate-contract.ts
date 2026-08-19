@@ -14,6 +14,7 @@ const LambdaResponseSchema = z.discriminatedUnion("status", [
   z.object({
     status: z.literal("COMPLETED"),
     s3Key: z.string().min(1, "s3Key is required on success"),
+    contractText: z.string().min(1, "contractText is required on success"),
   }),
   z.object({
     status: z.literal("FAILED"),
@@ -36,13 +37,14 @@ export async function handleGenerateContractPdf(
     throw new Error(payload.error)
   }
 
-  // 4. Update the Contract record 
+  // 4. Update the Contract record
   await prisma.contract.update({
-    where: { 
-      id: metadata.contractId 
+    where: {
+      id: metadata.contractId
     },
     data: {
       originalS3Key: payload.s3Key,
+      markdownText: payload.contractText,
     },
   })
 }
