@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
-import { Plus, X, Users, UserPlus } from "lucide-react";
+import { Users } from "lucide-react";
 
 import { createContractAction } from "@/lib/actions/contracts/create-contract";
 import { getAllContractTemplates } from "@/lib/actions/contracts/get-all-templates";
@@ -28,8 +28,6 @@ interface AdminContractFormProps {
   templates: ContractTemplateOption[];
 }
 
-
-
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
@@ -41,27 +39,11 @@ function SubmitButton() {
 
 export function AdminContractForm({ templates }: AdminContractFormProps) {
   const [roles, setRoles] = useState<string[]>(["Client"]);
-  const [roleInput, setRoleInput] = useState("");
 
-  const handleAddRole = (roleToAdd?: string) => {
-    const targetRole = (roleToAdd || roleInput).trim();
-    if (!targetRole) return;
-
-    if (!roles.includes(targetRole)) {
-      setRoles((prev) => [...prev, targetRole]);
-    }
-    setRoleInput("");
-  };
-
-  const handleRemoveRole = (roleToRemove: string) => {
-    setRoles((prev) => prev.filter((r) => r !== roleToRemove));
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault(); // Don't submit the entire form
-      handleAddRole();
-    }
+  const handleToggleRole = (role: string) => {
+    setRoles((prev) =>
+      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
+    );
   };
 
   return (
@@ -125,51 +107,27 @@ export function AdminContractForm({ templates }: AdminContractFormProps) {
             Required Signer Roles
           </Label>
           <p className="text-[0.8rem] text-muted-foreground">
-            Define which party slots must sign this contract (e.g. Client, Athlete, Agent).
+            Select which party slots must sign this contract.
           </p>
         </div>
 
-        {/* Custom Input + Plus Icon Button */}
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <UserPlus className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
-            <Input
-              type="text"
-              value={roleInput}
-              onChange={(e) => setRoleInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Type role name and press Enter (or click +)"
-              className="pl-9 text-sm"
-            />
-          </div>
-          <Button
-            type="button"
-            variant="secondary"
-            size="icon"
-            onClick={() => handleAddRole()}
-            disabled={!roleInput.trim()}
-          >
-            <Plus className="w-4 h-4" />
-          </Button>
-        </div>
-
-        {/* Quick Presets */}
+        {/* Presets (select only, no custom roles) */}
         <div className="flex flex-wrap items-center gap-1.5 pt-1">
-          <span className="text-[0.75rem] text-muted-foreground mr-1">Presets:</span>
           {COMMON_ROLE_PRESETS.map((preset) => {
             const isSelected = roles.includes(preset);
             return (
               <button
                 type="button"
                 key={preset}
-                onClick={() => (isSelected ? handleRemoveRole(preset) : handleAddRole(preset))}
+                onClick={() => handleToggleRole(preset)}
                 className={`text-[0.75rem] px-2 py-0.5 rounded-md border transition-colors ${
                   isSelected
                     ? "bg-primary/10 border-primary/30 text-primary font-medium"
                     : "bg-background hover:bg-muted text-muted-foreground"
                 }`}
               >
-                + {preset}
+                {isSelected ? "✓ " : "+ "}
+                {preset}
               </button>
             );
           })}
@@ -183,23 +141,16 @@ export function AdminContractForm({ templates }: AdminContractFormProps) {
           <div className="flex flex-wrap gap-1.5 min-h-[32px] p-2 bg-background rounded-md border">
             {roles.length === 0 ? (
               <span className="text-xs text-muted-foreground italic">
-                No roles defined. At least 1 role is recommended.
+                No roles selected. At least 1 role is recommended.
               </span>
             ) : (
               roles.map((role) => (
                 <Badge
                   key={role}
                   variant="secondary"
-                  className="gap-1.5 pl-2.5 pr-1.5 py-1 text-xs font-medium"
+                  className="gap-1.5 px-2.5 py-1 text-xs font-medium"
                 >
                   {role}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveRole(role)}
-                    className="hover:bg-muted rounded-full p-0.5 transition-colors"
-                  >
-                    <X className="w-3 h-3 text-muted-foreground hover:text-foreground" />
-                  </button>
                 </Badge>
               ))
             )}
@@ -219,9 +170,8 @@ export function AdminContractForm({ templates }: AdminContractFormProps) {
           id="requirements"
           name="requirements"
           required
-          rows={7}
           placeholder="Payment is $5,000 upfront. Must include a 12-month non-compete clause..."
-          className="resize-none overflow-y-auto"
+          className="h-40 max-h-40 resize-none overflow-y-auto"
         />
       </div>
 
