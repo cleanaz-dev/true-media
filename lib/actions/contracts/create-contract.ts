@@ -12,10 +12,11 @@ export async function createContractAction(formData: FormData) {
   const requirements = formData.get("requirements") as string
   const templateId = formData.get("templateId") as string | null
 
-  // ==========================================
-  // 0. LOAD TEMPLATE (IF SELECTED)
-  // ==========================================
+  // 💡 Extract dynamic roles array submitted from the form
+  const rawRoles = formData.getAll("roles") as string[]
+  const roles = rawRoles.length > 0 ? rawRoles : ["Client"]
 
+  // 1. Load Template (if selected)
   const template = templateId
     ? await prisma.contractTemplate.findUnique({
         where: { id: templateId },
@@ -23,22 +24,17 @@ export async function createContractAction(formData: FormData) {
       })
     : null
 
-  // ==========================================
-  // 1. CREATE CONTRACT DRAFT RECORD IN DATABASE
-  // ==========================================
-
+  // 2. Create Contract Draft with assigned roles
   const contract = await prisma.contract.create({
     data: {
       title,
       status: "DRAFT",
       templateId: template?.id ?? null,
+      roles, // 👈 Saved to Contract model
     },
   })
 
-  // ==========================================
-  // 2. CREATE SYSTEM TASK
-  // ==========================================
-
+  // 3. Create System Task
   const systemTask = await prisma.systemTask.create({
     data: {
       type: "GENERATE_CONTRACT_PDF",
@@ -47,39 +43,39 @@ export async function createContractAction(formData: FormData) {
         contractId: contract.id,
         contractType,
         requirements,
-        templateId: template?.id ?? null,
+        roles,
       },
     },
   })
 
-  // ==========================================
-  // 3. CREATE PAYLOAD FOR LAMBDA INVOCATION
-  // ==========================================
+  // 4. Invoke Lambda (Master Generation)
   const payload = {
+    mode: "GENERATE",
+    title,
     contractType,
     requirements,
+    template: template?.body ? { body: template.body } : null,
     webhookUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/webhooks/system-task/${systemTask.id}`,
-    scrapeInternet: false,
-    template: template
-      ? {
-          name: template.name,
-          body: template.body ?? undefined,
-          s3Key: template.s3Key ?? undefined,
-        }
-      : null,
+    metadata: {
+      contractId: contract.id,
+      companyName: "True Sports and Entertainment Inc.",
+      companySignor: "Raymond Kingu Jr.",
+      companyTitle: "President & CEO",
+      roles,
+    },
   }
 
   const command = createCommand({
     functionName: process.env.LAMBDA_CONTRACT_GENERATOR_NAME!,
-    payload: payload,
+    payload,
     invocationType: "Event",
   })
 
   try {
     await lambda.send(command)
   } catch (error) {
-    console.error("Lambda Invocation Failed:", error)
-    throw new Error("Failed to generate contract via Lambda")
+    console.error("Lambda Master Generation Failed:", error)
+    throw new Error("Failed to generate master contract via Lambda")
   }
 
   revalidatePath("/admin/contracts")

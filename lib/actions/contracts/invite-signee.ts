@@ -1,71 +1,89 @@
-// lib/actions/contracts/invite-signee.ts
-"use server";
+// app/actions/invite-signer.ts
+"use server"
 
-import { prisma } from "@/lib/prisma";
-import { sendEmail } from "@/lib/email/send-email";
-import { InviteSigneeEmail } from "@/lib/email/templates/invite-signee-email";
-import crypto from "crypto";
-import { revalidatePath } from "next/cache";
+import { prisma } from "@/lib/prisma"
+import { lambda, createCommand } from "@/lib/aws/lambda"
+import crypto from "crypto"
 
 export async function inviteSignee({
   contractId,
-  email,
   name,
+  email,
+  role
 }: {
-  contractId: string;
-  email: string;
-  name?: string;
+  contractId: string
+  name: string
+  email: string
+  role: string
 }) {
   const contract = await prisma.contract.findUnique({
     where: { id: contractId },
-  });
+    include: {
+      template: true
+    }
+  })
 
-  if (!contract) {
-    throw new Error("Contract not found");
+  if (!contract || !contract.template?.body) {
+    throw new Error("Contract or contract content not found.")
   }
 
-  // 1. Generate unique signToken
-  const signToken = crypto.randomBytes(32).toString("hex");
+  const signToken = crypto.randomBytes(32).toString("hex")
 
-  // 2. Create the signer in the DB
+  // 1. Create Signer in PREPARING status
   const signer = await prisma.contractSigner.create({
     data: {
-      contractId,
+      contractId: contract.id,
+      name,
       email,
-      name: name || email,
       signToken,
-      status: "PENDING",
+      status: "PREPARING",
     },
-  });
+  })
 
-  // 3. Try to send the email
-  try {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-    const signUrl = `${appUrl}/onboarding/${signToken}`;
+  // 2. Create Task for Webhook Callback
+  const systemTask = await prisma.systemTask.create({
+    data: {
+      type: "PERSONALIZE_SIGNER_PDF",
+      status: "PENDING",
+      metadata: {
+        signerId: signer.id,
+        contractId: contract.id,
+      },
+    },
+  })
 
-    await sendEmail({
-      to: email,
-      subject: `Signature Request: ${contract.title}`,
-      react: InviteSigneeEmail({
-        signerName: signer.name,
-        contractTitle: contract.title,
-        signUrl: signUrl,
-      }),
-    });
-  } catch (err) {
-    // ⚠️ ROLLBACK: If email delivery fails, remove the signer so there's no ghost record
-    console.error("[inviteSignee] Email failed to send, rolling back signer creation:", err);
-    
-    await prisma.contractSigner.delete({
-      where: { id: signer.id },
-    });
+  // 3. Format today's date for preamble preview
+  const formattedDate = new Date().toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  })
 
-    throw new Error(
-      err instanceof Error ? `Failed to send email: ${err.message}` : "Failed to send invitation email."
-    );
+  // 4. Invoke Lambda (Fast Personalization ~150ms)
+  const payload = {
+    mode: "PERSONALIZE",
+    title: contract.title,
+    body: contract.template.body, // The master markdown stored in contract.content
+    webhookUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/webhooks/system-task/${systemTask.id}`,
+    metadata: {
+      signerId: signer.id,
+      companyName: "True Sports and Entertainment Inc.",
+      companySignor: "Raymond Kingu Jr.",
+      companyTitle: "President & CEO",
+      clientName: signer.name,
+      clientSignor: "", // Blank until they sign
+      clientTitle: "",
+      effectiveDate: formattedDate,
+    },
   }
 
-  // 4. If everything succeeded:
-  revalidatePath(`/admin/contracts/${contractId}`);
-  return { success: true, signer };
+  const command = createCommand({
+    functionName: process.env.LAMBDA_CONTRACT_GENERATOR_NAME!,
+    payload,
+    invocationType: "Event",
+  })
+
+  await lambda.send(command)
+
+  return { success: true, signerId: signer.id }
 }

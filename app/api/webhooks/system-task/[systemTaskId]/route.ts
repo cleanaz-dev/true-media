@@ -48,6 +48,12 @@ export async function POST(request: Request, { params }: Params) {
             case TaskType.OTHER:
                 await handleOther(systemTask, data);
                 break;
+            case TaskType.UPDATING_CONTRACT_PDF:
+                console.log("Pending...")
+                break
+                case TaskType.PERSONALIZE_SIGNER_PDF:
+                console.log("Pending...")
+                break
 
             default:
                 const _exhaustive: never = systemTask.type;

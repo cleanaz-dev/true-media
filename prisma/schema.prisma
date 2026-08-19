@@ -49,15 +49,18 @@ enum ContractStatus {
 }
 
 enum SignerStatus {
-  PENDING
-  SIGNED
-  DECLINED
+  PREPARING 
+  PENDING  
+  SIGNED    
+  DECLINED 
 }
 
 enum TaskType {
   GENERATE_CONTRACT_PDF
+  UPDATING_CONTRACT_PDF
   RESEARCH_CONTENT
   OTHER
+  PERSONALIZE_SIGNER_PDF
 }
 
 enum TaskStatus {
@@ -336,6 +339,8 @@ model Contract {
   id     String         @id @default(cuid())
   title  String
   status ContractStatus @default(DRAFT)
+  roles  String[] @default(["Client"])
+  
 
   // Document Storage
   originalS3Key  String? // The original unsigned document (e.g., generated PDF)
@@ -368,11 +373,12 @@ model ContractSigner {
   userId String?
   email  String
   name   String
+  role   String   @default("Client") 
 
-  status SignerStatus @default(PENDING)
+  status SignerStatus @default(PREPARING)
 
   // 💡 Add this: Each signer gets their own unique completed PDF
-  completedS3Key String?
+  contractKey String?
 
   // Audit Trail
   signedAt     DateTime?

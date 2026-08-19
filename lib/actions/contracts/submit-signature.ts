@@ -69,7 +69,7 @@ export async function submitSignature({
       signedAt: now,
       ipAddress,
       userAgent,
-      completedS3Key: completedKey,
+      contractKey: completedKey,
     },
   });
 
