@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { COMMON_ROLE_PRESETS } from "@/lib/types";
 
 export type ContractTemplateOption = Awaited<
   ReturnType<typeof getAllContractTemplates>
@@ -27,16 +28,7 @@ interface AdminContractFormProps {
   templates: ContractTemplateOption[];
 }
 
-const COMMON_ROLE_PRESETS = [
-  "Social Media Page Manager",
-  "Graphic Designer",
-  "Client",
-  "Contractor",
-  "Athlete",
-  "Agent",
-  "Advisor",
-  "Parent / Guardian",
-];
+
 
 function SubmitButton() {
   const { pending } = useFormStatus();

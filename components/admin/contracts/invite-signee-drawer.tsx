@@ -24,6 +24,7 @@ import {
 import { UserPlus, Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { inviteSignee } from "@/lib/actions/contracts/invite-signee";
+import { COMMON_ROLE_PRESETS } from "@/lib/types";
 
 interface InviteSigneesDrawerProps {
   contractId: string;
@@ -32,7 +33,7 @@ interface InviteSigneesDrawerProps {
 
 export function InviteSigneesDrawer({
   contractId,
-  availableRoles = ["Client", "Contractor", "Athlete", "Agent"],
+  availableRoles = COMMON_ROLE_PRESETS
 }: InviteSigneesDrawerProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
