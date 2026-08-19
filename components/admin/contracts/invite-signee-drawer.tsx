@@ -28,12 +28,12 @@ import { COMMON_ROLE_PRESETS } from "@/lib/types";
 
 interface InviteSigneesDrawerProps {
   contractId: string;
-  availableRoles?: string[]; // 💡 Pass contract.roles here
+  availableRoles: string[]; // 💡 Pass contract.roles here
 }
 
 export function InviteSigneesDrawer({
   contractId,
-  availableRoles = COMMON_ROLE_PRESETS
+  availableRoles 
 }: InviteSigneesDrawerProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);

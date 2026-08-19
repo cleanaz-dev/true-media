@@ -19,7 +19,7 @@ export function SingleContractPage({
         <p className="text-sm text-muted-foreground font-mono">
           ID: {contract.id}
         </p>
-        <InviteSigneesDrawer contractId={contract.id} />
+        <InviteSigneesDrawer contractId={contract.id} availableRoles={contract.roles} />
       </div>
 
       {/* Main Content Grid */}
