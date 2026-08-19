@@ -38,7 +38,7 @@ function SubmitButton() {
 }
 
 export function AdminContractForm({ templates }: AdminContractFormProps) {
-  const [roles, setRoles] = useState<string[]>(["Client"]);
+  const [roles, setRoles] = useState<string[]>([]);
 
   const handleToggleRole = (role: string) => {
     setRoles((prev) =>
