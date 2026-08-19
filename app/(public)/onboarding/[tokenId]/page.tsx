@@ -19,10 +19,9 @@ export default async function Page({ params }: Params) {
   }
 
   // 💡 If this specific user signed -> load their completed PDF. Otherwise -> clean original!
-  const s3KeyToView =
-    signee.status === "SIGNED" && signee.contractKey
-      ? signee.contractKey
-      : signee.contract.originalS3Key;
+  const s3KeyToView = signee.contractKey
+    ? signee.contractKey
+    : signee.contract.originalS3Key;
 
   let pdfUrl: string | null = null;
   if (s3KeyToView) {
