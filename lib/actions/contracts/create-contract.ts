@@ -12,7 +12,7 @@ export async function createContractAction(formData: FormData) {
   const requirements = formData.get("requirements") as string
   const templateId = formData.get("templateId") as string | null
 
-  // 💡 Extract dynamic roles array submitted from the form
+  // Extract dynamic roles array submitted from the form
   const rawRoles = formData.getAll("roles") as string[]
   const roles = rawRoles.length > 0 ? rawRoles : ["Client"]
 
@@ -29,8 +29,8 @@ export async function createContractAction(formData: FormData) {
     data: {
       title,
       status: "DRAFT",
-      templateId: template?.id ?? null,
-      roles, // 👈 Saved to Contract model
+      roles,
+      ...(templateId ? { templateId } : {}),
     },
   })
 

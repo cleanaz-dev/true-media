@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -45,6 +46,11 @@ export function AdminContractForm({ templates }: AdminContractFormProps) {
       prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
     );
   };
+
+  const templateItems = templates.map((template) => ({
+    label: template.name,
+    value: template.id,
+  }));
 
   return (
     <form action={createContractAction} className="max-w-2xl space-y-8">
@@ -79,16 +85,21 @@ export function AdminContractForm({ templates }: AdminContractFormProps) {
 
         <div className="space-y-2">
           <Label htmlFor="templateId">Template Reference (Optional)</Label>
-          <Select name="templateId">
+          {/* Base UI's Select accepts a `name` prop and renders its own hidden
+              input for native form participation, so no manual hidden input
+              or controlled state is needed to get it into formData. */}
+          <Select name="templateId" items={templateItems}>
             <SelectTrigger id="templateId">
               <SelectValue placeholder="Select a template (optional)" />
             </SelectTrigger>
             <SelectContent>
-              {templates.map((template) => (
-                <SelectItem key={template.id} value={template.id}>
-                  {template.name}
-                </SelectItem>
-              ))}
+              <SelectGroup>
+                {templateItems.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
             </SelectContent>
           </Select>
           {templates.length === 0 && (
