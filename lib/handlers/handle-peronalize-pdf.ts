@@ -22,7 +22,7 @@ export async function handlePersonalizePdf(
 ) {
   const parsedData = lambdaWebhookPayloadSchema.safeParse(data);
   if (!parsedData.success) {
-    console.error("[handlePersonalizePdf] Payload invalid:", parsedData.error.flatten());
+    console.error("[handlePersonalizePdf] Payload invalid:", z.flattenError(parsedData.error));
     throw new Error(`Invalid Lambda webhook payload: ${parsedData.error.message}`);
   }
 
