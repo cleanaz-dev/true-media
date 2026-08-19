@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
-import { Users } from "lucide-react";
+import { Users, X } from "lucide-react";
 
 import { createContractAction } from "@/lib/actions/contracts/create-contract";
 import { getAllContractTemplates } from "@/lib/actions/contracts/get-all-templates";
@@ -148,9 +148,16 @@ export function AdminContractForm({ templates }: AdminContractFormProps) {
                 <Badge
                   key={role}
                   variant="secondary"
-                  className="gap-1.5 px-2.5 py-1 text-xs font-medium"
+                  className="gap-1.5 pl-2.5 pr-1.5 py-1 text-xs font-medium"
                 >
                   {role}
+                  <button
+                    type="button"
+                    onClick={() => handleToggleRole(role)}
+                    className="hover:bg-muted rounded-full p-0.5 transition-colors"
+                  >
+                    <X className="w-3 h-3 text-muted-foreground hover:text-foreground" />
+                  </button>
                 </Badge>
               ))
             )}
