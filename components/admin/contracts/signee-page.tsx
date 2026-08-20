@@ -58,14 +58,14 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
       return;
     }
 
-    const signatureImage = signaturePadRef.current.toDataURL("image/png");
+  const signatureImage = signaturePadRef.current.toDataURL("image/png");
 
     try {
       setIsSubmitting(true);
       await submitSignature({
         signToken: signee.signToken!,
         printedName: printedName.trim(),
-        signatureImage,
+        signatureTxt: signatureImage,   // matches server action param
         title: signee.role || "",
       });
 
