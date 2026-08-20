@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { SigneeWithContract } from "@/lib/actions/contracts/get-signee";
 import { submitSignature } from "@/lib/actions/contracts/submit-signature";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -29,20 +30,18 @@ interface SigneePageProps {
 }
 
 export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
+  const router = useRouter();
   const isAlreadySigned = signee.status === "SIGNED";
 
-  // Form states
   const [printedName, setPrintedName] = useState(signee.name || "");
   const [hasReviewedDoc, setHasReviewedDoc] = useState(false);
   const [agreedToEsign, setAgreedToEsign] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSignedSuccessfully, setHasSignedSuccessfully] = useState(isAlreadySigned);
 
-  // Signature pad ref
   const signaturePadRef = useRef<SignaturePadRef>(null);
   const [signatureEmpty, setSignatureEmpty] = useState(true);
 
-  // Submit Handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -67,10 +66,14 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
         signToken: signee.signToken!,
         printedName: printedName.trim(),
         signatureImage,
+        title: signee.role || "",
       });
 
       setHasSignedSuccessfully(true);
       toast.success("Contract signed successfully!");
+
+      // Force server component re-render so it serves the sealed PDF
+      router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to sign contract");
     } finally {
@@ -87,7 +90,6 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
 
   return (
     <div className="min-h-screen bg-muted/30 flex flex-col">
-      {/* Top Navbar */}
       <header className="bg-background border-b px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between sticky top-0 z-20 shadow-xs">
         <div className="flex items-center gap-3 truncate">
           <div className="p-2 bg-primary/10 rounded-lg text-primary shrink-0">
@@ -113,10 +115,8 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
         )}
       </header>
 
-      {/* Main Container */}
       <main className="flex-1 p-4 sm:p-6 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        {/* DESKTOP ONLY: Standard Iframe on the Left */}
         <div className="hidden lg:flex lg:col-span-7 h-[850px] bg-card rounded-xl border shadow-xs overflow-hidden flex-col">
           {pdfUrl ? (
             <iframe
@@ -131,10 +131,8 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
           )}
         </div>
 
-        {/* MOBILE & DESKTOP: Right Side (or Full Width on Mobile) */}
         <div className="w-full lg:col-span-5 space-y-4">
           
-          {/* MOBILE ONLY: Document Download & Open Card */}
           {pdfUrl && !hasSignedSuccessfully && (
             <Card className="lg:hidden border-primary/20 bg-primary/5 shadow-xs">
               <CardHeader className="pb-3">
@@ -203,7 +201,6 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
 
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-5">
-                  {/* 1. Printed Legal Name */}
                   <div className="space-y-1.5">
                     <Label htmlFor="printedName" className="text-xs font-semibold">
                       Full Legal Name (Printed) *
@@ -217,14 +214,12 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
                     />
                   </div>
 
-                  {/* 2. Signature Pad */}
                   <SignaturePad
                     ref={signaturePadRef}
                     onChange={(empty) => setSignatureEmpty(empty)}
                     height={130}
                   />
 
-                  {/* 3. Acknowledgements & Consent */}
                   <div className="space-y-3 pt-2 border-t text-xs">
                     <div className="flex items-start space-x-2.5">
                       <Checkbox
@@ -255,7 +250,6 @@ export function SigneePage({ signee, pdfUrl }: SigneePageProps) {
                     </div>
                   </div>
 
-                  {/* Submit Button */}
                   <Button type="submit" className="w-full gap-2" disabled={!isFormValid}>
                     {isSubmitting ? (
                       <>

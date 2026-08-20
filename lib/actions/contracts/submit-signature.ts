@@ -1,4 +1,3 @@
-// lib/actions/contracts/submit-signature.ts
 "use server";
 
 import { headers } from "next/headers";
@@ -13,10 +12,12 @@ export async function submitSignature({
   signToken,
   printedName,
   signatureImage,
+  title,
 }: {
   signToken: string;
   printedName: string;
   signatureImage: string;
+  title?: string;
 }) {
   const headerList = await headers();
   const ipAddress =
@@ -25,7 +26,6 @@ export async function submitSignature({
     "unknown";
   const userAgent = headerList.get("user-agent") || "unknown";
 
-  // 1. Fetch THIS specific signer and their contract
   const signer = await prisma.contractSigner.findUnique({
     where: { signToken },
     include: { contract: true },
@@ -37,16 +37,17 @@ export async function submitSignature({
 
   const now = new Date();
 
-  // 2. Download the clean original template PDF
-  const originalPdfBuffer = await getFileBuffer(signer.contract.originalS3Key);
+  // Use the personalized draft (contractKey) if available, else fall back to original
+  const basePdfKey = signer.contractKey || signer.contract.originalS3Key;
+  const basePdfBuffer = await getFileBuffer(basePdfKey);
 
-  // 3. Seal ONLY this signer's signature onto their copy
   const sealedPdfBuffer = await sealContractWithSignatures({
-    originalPdfBuffer,
+    originalPdfBuffer: basePdfBuffer,
     signers: [
       {
         name: printedName,
         email: signer.email,
+        title: title || signer.role || "",
         signatureTxt: signatureImage,
         signedAt: now,
         ipAddress,
@@ -55,11 +56,9 @@ export async function submitSignature({
     contractTitle: signer.contract.title,
   });
 
-  // 4. Upload THIS signer's sealed PDF
   const completedKey = `contracts/completed/${signer.id}-${Date.now()}.pdf`;
   await uploadFilePrivate(completedKey, sealedPdfBuffer, "application/pdf");
 
-  // 5. Update THIS signer with their signed PDF & audit data
   await prisma.contractSigner.update({
     where: { id: signer.id },
     data: {
@@ -73,7 +72,6 @@ export async function submitSignature({
     },
   });
 
-  // 6. Send completion email to THIS signer
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   try {
     await sendEmail({

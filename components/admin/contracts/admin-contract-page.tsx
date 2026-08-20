@@ -38,7 +38,7 @@ export function AdminContractsPage({ contracts }: AdminContractsPageProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="px-8 pt-8">
+      <div className="md:px-8 md:pt-4 px-4 pt-2">
         <AdminPageHeader
           title="Contracts"
           description="View and manage all contracts here."
