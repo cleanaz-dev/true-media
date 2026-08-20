@@ -11,52 +11,113 @@ import {
   Hr,
   Link,
 } from "react-email";
+import {
+  mainStyle,
+  containerStyle,
+  contentStyle,
+  headerContainerStyle,
+  headerLogoStyle,
+  companyBadgeStyle,
+  headingStyle,
+  textStyle,
+  textMutedStyle,
+  successBoxStyle,
+  buttonContainerStyle,
+  buttonPrimaryStyle,
+  dividerStyle,
+  subLinkTextStyle,
+  linkStyle,
+  footerContainerStyle,
+  footerLegalStyle,
+} from "@/lib/email/styles";
 
 export interface ContractSignedCompletedEmailProps {
   recipientName: string;
   contractTitle: string;
   downloadUrl: string;
+  companyName?: string;
 }
 
 export function ContractSignedCompletedEmail({
   recipientName,
   contractTitle,
   downloadUrl,
+  companyName = "True Sports & Entertainment",
 }: ContractSignedCompletedEmailProps) {
   return (
     <Html>
       <Head />
       <Body style={mainStyle}>
         <Container style={containerStyle}>
-          <Heading style={headingStyle}>✓ Contract Fully Executed</Heading>
-
-          <Text style={textStyle}>Hello {recipientName},</Text>
-
-          <Text style={textStyle}>
-            Great news! All required parties have signed{" "}
-            <strong>{contractTitle}</strong>.
-          </Text>
-
-          <Text style={textStyle}>
-            You can view or download a copy of the executed agreement with all
-            recorded signature audit trails below:
-          </Text>
-
-          <Section style={buttonContainerStyle}>
-            <Button style={buttonStyle} href={downloadUrl}>
-              View Executed Document
-            </Button>
+          
+          {/* Corporate Header */}
+          <Section style={headerContainerStyle}>
+            <Text style={headerLogoStyle}>{companyName}</Text>
           </Section>
 
-          <Hr style={dividerStyle} />
+          <Section style={contentStyle}>
+            <Text style={companyBadgeStyle}>Execution Complete</Text>
+            
+            <Heading style={headingStyle}>Contract Fully Executed</Heading>
 
-          <Text style={footerTextStyle}>
-            Direct link to document:
-            <br />
-            <Link href={downloadUrl} style={linkStyle}>
-              {downloadUrl}
-            </Link>
-          </Text>
+            <Text style={textStyle}>Hello {recipientName},</Text>
+
+            <Text style={textStyle}>
+              Great news — all required parties have successfully signed the agreement below.
+            </Text>
+
+            {/* Success Status Box */}
+            <Section style={successBoxStyle}>
+              <Text
+                style={{
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  color: "#166534",
+                  margin: "0 0 4px 0",
+                }}
+              >
+                ✅ {contractTitle}
+              </Text>
+              <Text
+                style={{
+                  fontSize: "12px",
+                  color: "#15803d",
+                  margin: 0,
+                }}
+              >
+                All signatures collected · Executed · Ready for download
+              </Text>
+            </Section>
+
+            <Text style={textMutedStyle}>
+              You can view or download a copy of the executed agreement, complete with recorded signature audit trails, using the link below.
+            </Text>
+
+            <Section style={buttonContainerStyle}>
+              <Button style={buttonPrimaryStyle} href={downloadUrl}>
+                View Executed Document
+              </Button>
+            </Section>
+
+            <Hr style={dividerStyle} />
+
+            <Text style={subLinkTextStyle}>
+              If the button doesn't work, copy and paste this link into your browser:
+              <br />
+              <Link href={downloadUrl} style={linkStyle}>
+                {downloadUrl}
+              </Link>
+            </Text>
+          </Section>
+
+          {/* Footer */}
+          <Section style={footerContainerStyle}>
+            <Text style={footerLegalStyle}>
+              © {new Date().getFullYear()} {companyName} Inc. All rights reserved.
+              <br />
+              This is an automated notification from your document management system.
+            </Text>
+          </Section>
         </Container>
       </Body>
     </Html>
@@ -64,67 +125,3 @@ export function ContractSignedCompletedEmail({
 }
 
 export default ContractSignedCompletedEmail;
-
-// --- Styles ---
-const mainStyle: React.CSSProperties = {
-  backgroundColor: "#f6f9fc",
-  fontFamily:
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif',
-  padding: "40px 0",
-};
-
-const containerStyle: React.CSSProperties = {
-  backgroundColor: "#ffffff",
-  margin: "0 auto",
-  padding: "32px",
-  borderRadius: "8px",
-  border: "1px solid #e5e7eb",
-  maxWidth: "560px",
-};
-
-const headingStyle: React.CSSProperties = {
-  fontSize: "22px",
-  fontWeight: "600",
-  color: "#166534",
-  marginTop: "0",
-  marginBottom: "20px",
-};
-
-const textStyle: React.CSSProperties = {
-  fontSize: "15px",
-  lineHeight: "24px",
-  color: "#374151",
-  margin: "12px 0",
-};
-
-const buttonContainerStyle: React.CSSProperties = {
-  textAlign: "center",
-  margin: "28px 0",
-};
-
-const buttonStyle: React.CSSProperties = {
-  backgroundColor: "#166534",
-  color: "#ffffff",
-  padding: "12px 24px",
-  borderRadius: "6px",
-  fontWeight: "500",
-  fontSize: "15px",
-  textDecoration: "none",
-  display: "inline-block",
-};
-
-const dividerStyle: React.CSSProperties = {
-  borderTop: "1px solid #e5e7eb",
-  margin: "24px 0 16px 0",
-};
-
-const footerTextStyle: React.CSSProperties = {
-  fontSize: "13px",
-  lineHeight: "20px",
-  color: "#6b7280",
-};
-
-const linkStyle: React.CSSProperties = {
-  color: "#2563eb",
-  wordBreak: "break-all",
-};
