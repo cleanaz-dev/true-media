@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { sendEmail } from "@/lib/email/send-email";
 import { ContractSignedCompletedEmail } from "@/lib/email/templates/contract-completed";
-import { getPdfSignedUrl } from "@/lib/aws/s3"; // <-- adjust to wherever your presign helper lives
+import { getPdfSignedUrl } from "@/lib/aws/s3";
 
 const signedPayloadSchema = z.object({
   status: z.string(),
@@ -17,13 +17,16 @@ export async function handleSignedContract(
   const contractId = (systemTask.metadata as { contractId?: string })?.contractId;
   if (!contractId) throw new Error("Missing contractId in system task metadata");
 
-  // 1. Point the contract at the sealed PDF
-  const contract = await prisma.contract.update({
-    where: { id: contractId },
-    data: {
-      contractKey: parsed.s3Key,
-      status: "COMPLETED",
-    },
+  // 1. Update the SIGNER's contractKey to the sealed PDF — contract is NEVER touched
+  const signer = await prisma.contractSigner.findFirst({
+    where: { contractId },
+    include: { contract: { select: { title: true } } }, // read-only, for the email
+  });
+  if (!signer) throw new Error("Signer not found for contract");
+
+  await prisma.contractSigner.update({
+    where: { id: signer.id },
+    data: { contractKey: parsed.s3Key },
   });
 
   // 2. Mark the task done
@@ -32,25 +35,19 @@ export async function handleSignedContract(
     data: { status: "COMPLETED" },
   });
 
-  // 3. Email the ONE signer their executed copy
-  const signer = await prisma.contractSigner.findFirst({
-    where: { contractId },
+  // 3. Email the signer their executed copy
+  const downloadUrl = await getPdfSignedUrl(parsed.s3Key, 60 * 60 * 24 * 7);
+
+  await sendEmail({
+    to: signer.email,
+    subject: `Fully Executed: ${signer.contract.title}`,
+    react: ContractSignedCompletedEmail({
+      recipientName: signer.name,
+      contractTitle: signer.contract.title,
+      downloadUrl,
+    }),
   });
-
-  if (signer) {
-    // 7 days = max SigV4 presign expiry
-    const downloadUrl = await getPdfSignedUrl(parsed.s3Key, 60 * 60 * 24 * 7);
-
-    await sendEmail({
-      to: signer.email,
-      subject: `Fully Executed: ${contract.title}`,
-      react: ContractSignedCompletedEmail({
-        recipientName: signer.name,
-        contractTitle: contract.title,
-        downloadUrl,
-      }),
-    });
-  }
 
   return { success: true };
 }
+
