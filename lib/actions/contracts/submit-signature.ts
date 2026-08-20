@@ -51,7 +51,7 @@ export async function submitSignature({
       status: "SIGNED",
       signedAt,
       name: printedName,
-      title: signerTitle,
+      role: signerTitle,
       signatureTxt,
       ipAddress,
       userAgent,
