@@ -6,6 +6,7 @@ import { TaskType } from "@/lib/generated/prisma/client";
 import { handleGenerateContractPdf } from "@/lib/handlers/handle-generate-contract";
 import { handleResearchContent } from "@/lib/handlers/handle-research-content";
 import { handlePersonalizePdf } from "@/lib/handlers/handle-peronalize-pdf";
+import { handleSignedContract } from "@/lib/handlers/handle-sgined-contract";
 
 interface Params {
     params: Promise<{
@@ -52,8 +53,11 @@ export async function POST(request: Request, { params }: Params) {
             case TaskType.UPDATING_CONTRACT_PDF:
                 console.log("Pending...")
                 break
-                case TaskType.PERSONALIZE_SIGNER_PDF:
+            case TaskType.PERSONALIZE_SIGNER_PDF:
                 await handlePersonalizePdf(systemTask,data)
+                break
+             case TaskType.SEAL_CONTRACT:
+                await handleSignedContract(systemTask,data)
                 break
 
             default:

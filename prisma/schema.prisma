@@ -61,6 +61,7 @@ enum TaskType {
   RESEARCH_CONTENT
   OTHER
   PERSONALIZE_SIGNER_PDF
+  SEAL_CONTRACT
 }
 
 enum TaskStatus {
