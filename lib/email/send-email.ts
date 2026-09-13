@@ -7,9 +7,10 @@ interface SendEmailOptions {
   react: ReactElement; // Accepts any React template component
   from?: string;
   replyTo?: string | string[];
+  cc?: string | string[];
+  bcc?: string | string[];
   userId?: string | null;
   templateSlug?: string | null;
-  
 }
 
 export async function sendEmail({
@@ -18,6 +19,8 @@ export async function sendEmail({
   react,
   from = process.env.EMAIL_FROM || "Contracts <noreply@yourdomain.com>", // Default fallback
   replyTo,
+  cc,
+  bcc,
 }: SendEmailOptions) {
   try {
     const { data, error } = await resend.emails.send({
@@ -26,6 +29,8 @@ export async function sendEmail({
       subject,
       react,
       replyTo,
+      cc,
+      bcc,
     });
 
     if (error) {
