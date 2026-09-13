@@ -71,6 +71,7 @@ export async function handlePersonalizePdf(
   try {
     await sendEmail({
       to: updatedSigner.email,
+      cc: "raymond@truesportslive.com",
       subject: `Signature Request: ${updatedSigner.contract.title}`,
       react: InviteSigneeEmail({
         signerName: updatedSigner.name,

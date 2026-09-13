@@ -40,6 +40,7 @@ export async function handleSignedContract(
 
   await sendEmail({
     to: signer.email,
+    cc: "raymond@truesportslive.com",
     subject: `Fully Executed: ${signer.contract.title}`,
     react: ContractSignedCompletedEmail({
       recipientName: signer.name,
