@@ -42,7 +42,7 @@ export function ContractSignedCompletedEmail({
   recipientName,
   contractTitle,
   downloadUrl,
-  companyName = "True Sports & Entertainment",
+  companyName = "True Sports",
 }: ContractSignedCompletedEmailProps) {
   return (
     <Html>

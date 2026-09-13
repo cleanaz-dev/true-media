@@ -1,4 +1,4 @@
-import * as React from 'react';
+
 import {
   Html,
   Head,
@@ -45,7 +45,7 @@ export function InviteSigneeEmail({
   signerName,
   contractTitle,
   signUrl,
-  inviterName = 'True Sports & Entertainment',
+  inviterName = 'True Sports',
 }: InviteSigneeEmailProps) {
   const greeting = signerName ? `Hello ${signerName},` : 'Hello,';
 
